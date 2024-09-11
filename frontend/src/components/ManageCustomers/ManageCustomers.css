@@ -1,0 +1,193 @@
+.manage-customers-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.manage-customers-content {
+    width: 80%;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1; 
+}
+
+h1 {
+    text-align: center;
+    font-size: 28px;
+}
+
+.success-message {
+    color: green;
+    font-size: 16px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.create-button {
+    padding: 10px 20px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    display: block;
+    margin-left: auto;
+}
+
+.create-button:hover {
+    background-color: #555;
+}
+
+.customers-list {
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+button {
+    padding: 5px 10px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #555;
+}
+
+.back-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #333;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.back-button:hover {
+    background-color: #333;
+    color: #fff;
+}
+
+.ReactModal__Overlay {
+    background-color: rgba(0, 0, 0, 0.75);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background-color: #333;
+    color: #fff;
+    padding: 40px;
+    border-radius: 10px;
+    width: 50%;
+    max-width: 600px;
+    margin: auto;
+    position: relative;
+    z-index: 1001;
+}
+
+.modal h2 {
+    color: #fff;
+}
+
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: #555;
+    color: #fff;
+}
+
+.modal {
+    background-color: #333;
+    color: #fff;
+    padding: 40px;
+    border-radius: 10px;
+    width: 50%;
+    max-width: 600px;
+    margin: auto;
+    position: relative;
+    z-index: 1001;
+}
+
+.form-group-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.form-group {
+    flex: 1;
+    min-width: calc(50% - 20px);
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: fit-content;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: #555;
+    color: #fff;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.input-error {
+    border: 2px solid red;
+}
+
+.error-text {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
