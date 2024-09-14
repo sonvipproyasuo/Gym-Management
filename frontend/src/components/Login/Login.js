@@ -25,10 +25,16 @@ const Login = () => {
                 username,
                 password
             });
+
+            const { token, user } = response.data;
+            login(token, user); 
     
-            login(response.data.token);
-    
-            navigate('/welcome');
+
+            if (user.role === 'admin') {
+                navigate('/welcome');
+            } else if (user.role === 'customer') {
+                navigate('/customer-welcome');
+            }
         } catch (err) {
             if (err.response && err.response.status === 401) {
                 setError('Wrong password');
@@ -37,7 +43,6 @@ const Login = () => {
             }
         }
     };
-    
 
     return (
         <div className="login-container">

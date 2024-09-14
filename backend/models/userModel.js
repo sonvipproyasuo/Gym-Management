@@ -5,6 +5,19 @@ const findUserByUsername = async (username) => {
     return rows[0];
 };
 
+const createUser = async (userData) => {
+    const { username, password, role } = userData;
+    const query = 'INSERT INTO users (username, password, role) VALUES (?, ?, ?)';
+    const values = [username, password, role];
+    return db.query(query, values);
+};
+
+const deleteUserByUsername = async (username) => {
+    return db.query('DELETE FROM users WHERE username = ?', [username]);
+};
+
 module.exports = {
-    findUserByUsername
+    createUser,
+    findUserByUsername,
+    deleteUserByUsername
 };

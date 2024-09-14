@@ -28,9 +28,7 @@ const ManageCustomers = () => {
 
         try {
             const response = await axios.post('http://localhost:5000/api/customers', customerData);
-            
             setCustomers([...customers, response.data.newCustomer]);
-            
             setIsModalOpen(false);
         } catch (error) {
             if (error.response && error.response.status === 409) {
@@ -46,6 +44,20 @@ const ManageCustomers = () => {
         }
     };
 
+    const deleteCustomer = async (username) => {
+        const confirmed = window.confirm('Are you sure you want to delete this customer? This action cannot be undone.');
+        if (!confirmed) return;
+
+        try {
+            await axios.delete(`http://localhost:5000/api/customers/${username}`);
+            setCustomers(customers.filter(customer => customer.username !== username));
+            alert('Customer and corresponding account deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting customer:', error);
+            alert('Failed to delete customer. Please try again.');
+        }
+    };
+
     return (
         <div className="manage-customers-container">
             <div className="manage-customers-content">
@@ -58,7 +70,6 @@ const ManageCustomers = () => {
                         <table>
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Full Name</th>
                                     <th>Email</th>
                                     <th>Phone</th>
@@ -69,7 +80,6 @@ const ManageCustomers = () => {
                             <tbody>
                                 {customers.map((customer) => (
                                     <tr key={customer.id}>
-                                        <td>{customer.id}</td>
                                         <td>{customer.full_name}</td>
                                         <td>{customer.email}</td>
                                         <td>{customer.phone}</td>
@@ -78,7 +88,7 @@ const ManageCustomers = () => {
                                             <button onClick={() => alert('Redirect to customer details')}>
                                                 View Details
                                             </button>
-                                            <button onClick={() => alert('Delete customer')}>
+                                            <button onClick={() => deleteCustomer(customer.username)}>
                                                 Delete
                                             </button>
                                         </td>
