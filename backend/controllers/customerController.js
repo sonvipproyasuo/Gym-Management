@@ -51,21 +51,23 @@ const createCustomer = async (req, res) => {
     };
 
     try {
-        const existingCustomer = await customerModel.checkCustomerExists(username, email, phone);
-
-        if (existingCustomer.length > 0) {
+        // Kiểm tra trùng lặp trong bảng users
+        const existingUser = await userModel.checkUserExists(username, email, phone);
+        if (existingUser.length > 0) {
             const existingFields = {};
-            existingCustomer.forEach(customer => {
-                if (customer.username === username) existingFields.username = 'Username';
-                if (customer.email === email) existingFields.email = 'Email';
-                if (customer.phone === phone) existingFields.phone = 'Phone';
+            existingUser.forEach(user => {
+                if (user.username === username) existingFields.username = 'Username';
+                if (user.email === email) existingFields.email = 'Email';
+                if (user.phone === phone) existingFields.phone = 'Phone';
             });
-            return res.status(409).json({ message: 'Duplicate information', existingFields });
+            return res.status(409).json({ message: 'Duplicate information in users', existingFields });
         }
 
+        // Tạo khách hàng mới trong bảng customers
         const result = await customerModel.createCustomer(customerData);
         const newCustomerId = result.insertId;
 
+        // Tạo user mới trong bảng users
         const hashedPassword = await bcrypt.hash('1', 10);
         const userData = {
             username,

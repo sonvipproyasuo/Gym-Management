@@ -16,8 +16,17 @@ const deleteUserByUsername = async (username) => {
     return db.query('DELETE FROM users WHERE username = ?', [username]);
 };
 
+const checkUserExists = async (username, email, phone) => {
+    const [results] = await db.query(
+        'SELECT * FROM users WHERE username = ? OR email = ? OR phone = ?',
+        [username, email, phone]
+    );
+    return results;
+};
+
 module.exports = {
     createUser,
     findUserByUsername,
-    deleteUserByUsername
+    deleteUserByUsername,
+    checkUserExists
 };
