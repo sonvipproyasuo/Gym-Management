@@ -14,16 +14,14 @@ const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage, customer }) =
 
     useEffect(() => {
         if (customer) {
-            // Set giá trị mặc định khi update khách hàng
             setUsername(customer.username);
             setFullName(customer.full_name);
             setEmail(customer.email);
             setPhone(customer.phone);
             setAddress(customer.address);
             setPtSessions(customer.pt_sessions_registered);
-            setAvatar(null);  // Không tải avatar hiện tại
+            setAvatar(null);
         } else {
-            // Reset các trường khi tạo khách hàng mới
             setUsername('');
             setFullName('');
             setEmail('');
@@ -54,7 +52,7 @@ const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage, customer }) =
         <Modal 
             isOpen={isOpen} 
             onRequestClose={onClose} 
-            contentLabel={customer ? 'Update Customer' : 'Create Customer'}  // Đổi tiêu đề khi update
+            contentLabel={customer ? 'Update Customer' : 'Create Customer'}
             className="modal" 
             overlayClassName="ReactModal__Overlay"
         >
@@ -70,7 +68,7 @@ const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage, customer }) =
                             type="text" 
                             value={username} 
                             onChange={(e) => setUsername(e.target.value)} 
-                            disabled={!!customer}  // Chỉ disable khi update, không disable khi tạo mới
+                            disabled={!!customer}
                         />
                     </div>
                     <div className="form-group">
@@ -87,7 +85,7 @@ const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage, customer }) =
                             type="email" 
                             value={email} 
                             onChange={(e) => setEmail(e.target.value)} 
-                            disabled={!!customer}  // Chỉ disable khi update
+                            disabled={!!customer}
                         />
                     </div>
                     <div className="form-group">
@@ -96,7 +94,7 @@ const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage, customer }) =
                             type="text" 
                             value={phone} 
                             onChange={(e) => setPhone(e.target.value)} 
-                            disabled={!!customer}  // Chỉ disable khi update
+                            disabled={!!customer}
                         />
                     </div>
                     <div className="form-group">

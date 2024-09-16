@@ -36,17 +36,18 @@ const checkCustomer = async (req, res) => {
 };
 
 const createCustomer = async (req, res) => {
-    const { username, fullName, email, phone, address, ptSessionsRegistered } = req.body;
+    const { username, fullName, email, phone, address, pt_sessions_registered } = req.body;
     const avatar = req.file ? req.file.filename : null;
 
     const customerData = {
         username,
-        fullName,
+        full_name: fullName,
         email,
         phone,
         address,
-        ptSessionsRegistered,
-        avatar
+        pt_sessions_registered,
+        avatar,
+        status: 'inactive'
     };
 
     try {
@@ -69,17 +70,56 @@ const createCustomer = async (req, res) => {
         const userData = {
             username,
             password: hashedPassword,
+            email,
+            phone,
             role: 'customer'
         };
         await userModel.createUser(userData);
 
         return res.status(201).json({
-            message: 'Customer and user account created successfully with default password "1"',
-            newCustomer: { id: newCustomerId, ...customerData }
+            message: 'Customer created successfully',
+            newCustomer: {
+                id: newCustomerId,
+                username,
+                full_name: fullName,
+                email,
+                phone,
+                address,
+                pt_sessions_registered,
+                avatar
+            }
         });
     } catch (err) {
         console.error('Error creating customer:', err);
         return res.status(500).json({ message: 'Error creating customer' });
+    }
+};
+
+const updateCustomer = async (req, res) => {
+    const { username } = req.params;
+    const { fullName, address, ptSessionsRegistered } = req.body;
+    const avatar = req.file ? req.file.filename : null;
+
+    try {
+        const customer = await customerModel.getCustomerByUsername(username);
+
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer not found' });
+        }
+
+        const updatedCustomer = {
+            fullName,
+            address,
+            pt_sessions_registered: ptSessionsRegistered,
+            avatar: avatar || customer.avatar
+        };
+
+        await customerModel.updateCustomerByUsername(username, updatedCustomer);
+
+        return res.status(200).json({ message: 'Customer updated successfully' });
+    } catch (err) {
+        console.error('Error updating customer:', err);
+        return res.status(500).json({ message: 'Error updating customer' });
     }
 };
 
@@ -92,9 +132,7 @@ const deleteCustomer = async (req, res) => {
             return res.status(404).json({ message: 'Customer not found' });
         }
 
-
         await customerModel.deleteCustomerByUsername(username);
-
         await userModel.deleteUserByUsername(username);
 
         res.status(200).json({ message: 'Customer and corresponding account deleted successfully' });
@@ -104,9 +142,11 @@ const deleteCustomer = async (req, res) => {
     }
 };
 
+
 module.exports = {
     getCustomers,
     checkCustomer,
     createCustomer,
+    updateCustomer,
     deleteCustomer
 };

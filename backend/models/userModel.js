@@ -6,9 +6,9 @@ const findUserByUsername = async (username) => {
 };
 
 const createUser = async (userData) => {
-    const { username, password, role } = userData;
-    const query = 'INSERT INTO users (username, password, role) VALUES (?, ?, ?)';
-    const values = [username, password, role];
+    const { username, password, email, phone, role } = userData;
+    const query = 'INSERT INTO users (username, password, email, phone, role) VALUES (?, ?, ?, ?, ?)';
+    const values = [username, password, email, phone, role];
     return db.query(query, values);
 };
 

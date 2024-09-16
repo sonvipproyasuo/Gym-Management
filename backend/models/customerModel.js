@@ -14,11 +14,11 @@ const checkCustomerExists = async (username, email, phone) => {
 };
 
 const createCustomer = async (customerData) => {
-    const { username, fullName, email, phone, address, ptSessionsRegistered, avatar } = customerData;
+    const { username, full_name, email, phone, address, pt_sessions_registered, avatar } = customerData;
     const [result] = await db.query(
         `INSERT INTO customers (username, full_name, email, phone, address, pt_sessions_registered, avatar, status)
          VALUES (?, ?, ?, ?, ?, ?, ?, 'inactive')`,
-        [username, fullName, email, phone, address, ptSessionsRegistered, avatar]
+        [username, full_name, email, phone, address, pt_sessions_registered, avatar]
     );
     return result;
 };
@@ -32,10 +32,23 @@ const deleteCustomerByUsername = async (username) => {
     return db.query('DELETE FROM customers WHERE username = ?', [username]);
 };
 
+const updateCustomerByUsername = async (username, updatedCustomer) => {
+    const { fullName, address, pt_sessions_registered, avatar } = updatedCustomer;
+    const query = `
+        UPDATE customers 
+        SET full_name = ?, address = ?, pt_sessions_registered = ?, avatar = ?
+        WHERE username = ?
+    `;
+    const values = [fullName, address, pt_sessions_registered, avatar, username];
+    return db.query(query, values);
+};
+
+
 module.exports = {
     getAllCustomers,
     checkCustomerExists,
     createCustomer,
     getCustomerByUsername,
-    deleteCustomerByUsername
+    deleteCustomerByUsername,
+    updateCustomerByUsername
 };

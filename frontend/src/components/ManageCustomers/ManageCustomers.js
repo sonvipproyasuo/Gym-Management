@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import CreateCustomer from './CreateCustomer';  // Dùng lại form create để update
+import CreateCustomer from './CreateCustomer';
 import './ManageCustomers.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 const ManageCustomers = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [customers, setCustomers] = useState([]);
-    const [selectedCustomer, setSelectedCustomer] = useState(null);  // Thêm state để lưu thông tin khách hàng cần update
+    const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
@@ -29,28 +29,25 @@ const ManageCustomers = () => {
     
         try {
             if (selectedCustomer) {
-                // Cập nhật khách hàng hiện tại
                 await axios.put(`http://localhost:5000/api/customers/${selectedCustomer.username}`, customerData);
                 setCustomers(customers.map(customer => 
                     customer.username === selectedCustomer.username ? { ...customer, ...customerData } : customer
                 ));
                 alert('Customer updated successfully');
             } else {
-                // Tạo mới khách hàng
                 const response = await axios.post('http://localhost:5000/api/customers', customerData);
     
-                // Cập nhật state ngay lập tức với khách hàng mới
                 setCustomers([...customers, {
                     ...response.data.newCustomer,
-                    fullName: response.data.newCustomer.full_name,  // Map full_name từ backend
-                    status: response.data.newCustomer.status || 'inactive'  // Đảm bảo status được map đúng
+                    fullName: response.data.newCustomer.full_name,
+                    status: response.data.newCustomer.status || 'inactive'
                 }]);
     
                 alert('Customer created successfully');
             }
     
             setIsModalOpen(false);
-            setSelectedCustomer(null);  // Đặt lại selectedCustomer sau khi update hoặc create
+            setSelectedCustomer(null);
         } catch (error) {
             if (error.response && error.response.status === 409) {
                 const duplicateFields = error.response.data.existingFields;
@@ -66,8 +63,8 @@ const ManageCustomers = () => {
     };
     
     const handleUpdateCustomer = (customer) => {
-        setSelectedCustomer(customer);  // Chọn khách hàng để update
-        setIsModalOpen(true);  // Mở modal
+        setSelectedCustomer(customer);
+        setIsModalOpen(true);
     };
 
     const deleteCustomer = async (username) => {
@@ -129,7 +126,7 @@ const ManageCustomers = () => {
                     onClose={() => { setIsModalOpen(false); setSelectedCustomer(null); }} 
                     onSubmit={handleCreateCustomer} 
                     errorMessage={errorMessage}
-                    customer={selectedCustomer}  // Truyền dữ liệu khách hàng để update
+                    customer={selectedCustomer}
                 />
                 <button className="back-button" onClick={() => navigate(-1)}>Back</button>
             </div>

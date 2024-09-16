@@ -15,23 +15,23 @@ const App = () => {
             <Router>
                 <Routes>
                     <Route path="/" element={<Login />} />
-                    <Route path="/welcome" element={ 
-                        <PrivateRoute role="admin">
+                    <Route path="/welcome" element={
+                        <PrivateRoute requiredRole="super_admin">
                             <Welcome />
                         </PrivateRoute>
                     } />
                     <Route path="/customer-welcome" element={
-                        <PrivateRoute role="customer">
+                        <PrivateRoute requiredRole="customer">
                             <CustomerWelcome />
                         </PrivateRoute>
                     } />
                     <Route path="/manage-trainers" element={
-                        <PrivateRoute role="admin">
+                        <PrivateRoute requiredRole="super_admin">
                             <ManageTrainers />
                         </PrivateRoute>
                     } />
                     <Route path="/manage-customers" element={
-                        <PrivateRoute role="admin">
+                        <PrivateRoute requiredRole="super_admin">
                             <ManageCustomers />
                         </PrivateRoute>
                     } />
