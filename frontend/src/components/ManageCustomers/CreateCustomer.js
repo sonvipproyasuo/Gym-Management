@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 
 Modal.setAppElement('#root');
 
-const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage }) => {
+const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage, customer }) => {
     const [username, setUsername] = useState('');
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
@@ -11,47 +11,54 @@ const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage }) => {
     const [address, setAddress] = useState('');
     const [ptSessions, setPtSessions] = useState(0);
     const [avatar, setAvatar] = useState(null);
-    const [errors, setErrors] = useState({});
+
+    useEffect(() => {
+        if (customer) {
+            // Set giá trị mặc định khi update khách hàng
+            setUsername(customer.username);
+            setFullName(customer.full_name);
+            setEmail(customer.email);
+            setPhone(customer.phone);
+            setAddress(customer.address);
+            setPtSessions(customer.pt_sessions_registered);
+            setAvatar(null);  // Không tải avatar hiện tại
+        } else {
+            // Reset các trường khi tạo khách hàng mới
+            setUsername('');
+            setFullName('');
+            setEmail('');
+            setPhone('');
+            setAddress('');
+            setPtSessions(0);
+            setAvatar(null);
+        }
+    }, [customer]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        setErrors({});
+        const customerData = {
+            username,
+            fullName,
+            email,
+            phone,
+            address,
+            pt_sessions_registered: ptSessions,
+            avatar
+        };
 
-        try {
-            const customerData = {
-                username,
-                fullName,
-                email,
-                phone,
-                address,
-                ptSessionsRegistered: ptSessions,
-                avatar
-            };
-
-            await onSubmit(customerData);
-        } catch (err) {
-            if (err.response && err.response.status === 409) {
-                const duplicateFields = err.response.data.existingFields || {};
-                const errorMessages = [];
-                if (duplicateFields.username) errorMessages.push('Username already exists');
-                if (duplicateFields.email) errorMessages.push('Email already exists');
-                if (duplicateFields.phone) errorMessages.push('Phone number already exists');
-
-                setErrors(duplicateFields);
-            }
-        }
+        await onSubmit(customerData);
     };
 
     return (
         <Modal 
             isOpen={isOpen} 
             onRequestClose={onClose} 
-            contentLabel="Create Customer" 
+            contentLabel={customer ? 'Update Customer' : 'Create Customer'}  // Đổi tiêu đề khi update
             className="modal" 
             overlayClassName="ReactModal__Overlay"
         >
-            <h2>Create New Customer</h2>
+            <h2>{customer ? 'Update Customer' : 'Create New Customer'}</h2>
 
             {errorMessage && <p className="error-text">{errorMessage}</p>}
 
@@ -63,9 +70,8 @@ const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage }) => {
                             type="text" 
                             value={username} 
                             onChange={(e) => setUsername(e.target.value)} 
-                            className={errors.username ? 'input-error' : ''}
+                            disabled={!!customer}  // Chỉ disable khi update, không disable khi tạo mới
                         />
-                        {errors.username && <span className="error-text">Username already exists</span>}
                     </div>
                     <div className="form-group">
                         <label>Full Name</label>
@@ -81,9 +87,8 @@ const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage }) => {
                             type="email" 
                             value={email} 
                             onChange={(e) => setEmail(e.target.value)} 
-                            className={errors.email ? 'input-error' : ''}
+                            disabled={!!customer}  // Chỉ disable khi update
                         />
-                        {errors.email && <span className="error-text">Email already exists</span>}
                     </div>
                     <div className="form-group">
                         <label>Phone</label>
@@ -91,9 +96,8 @@ const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage }) => {
                             type="text" 
                             value={phone} 
                             onChange={(e) => setPhone(e.target.value)} 
-                            className={errors.phone ? 'input-error' : ''}
+                            disabled={!!customer}  // Chỉ disable khi update
                         />
-                        {errors.phone && <span className="error-text">Phone number already exists</span>}
                     </div>
                     <div className="form-group">
                         <label>Address</label>
@@ -121,7 +125,7 @@ const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage }) => {
                 </div>
 
                 <div className="form-actions">
-                    <button type="submit">Create Customer</button>
+                    <button type="submit">{customer ? 'Update Customer' : 'Create Customer'}</button>
                     <button type="button" onClick={onClose}>Cancel</button>
                 </div>
             </form>
