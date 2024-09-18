@@ -26,20 +26,25 @@ const ManageCustomers = () => {
 
     const handleCreateCustomer = async (customerData) => {
         setErrorMessage('');
-    
+
         try {
             if (selectedCustomer) {
                 await axios.put(`http://localhost:5000/api/customers/${selectedCustomer.username}`, customerData);
-                setCustomers(customers.map(customer => 
-                    customer.username === selectedCustomer.username ? { ...customer, ...customerData } : customer
-                ));
+                
+                const updatedCustomers = customers.map(customer => 
+                    customer.username === selectedCustomer.username 
+                        ? { ...customer, ...customerData, full_name: customerData.fullName } 
+                        : customer
+                );
+                setCustomers(updatedCustomers);
+                
                 alert('Customer updated successfully');
             } else {
                 const response = await axios.post('http://localhost:5000/api/customers', customerData);
     
                 setCustomers([...customers, {
                     ...response.data.newCustomer,
-                    fullName: response.data.newCustomer.full_name,
+                    full_name: response.data.newCustomer.full_name,
                     status: response.data.newCustomer.status || 'inactive'
                 }]);
     

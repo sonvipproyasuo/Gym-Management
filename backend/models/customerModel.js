@@ -13,6 +13,15 @@ const checkCustomerExists = async (username, email, phone) => {
     return results;
 };
 
+const getCustomerByUsername = async (username) => {
+    const [result] = await db.query('SELECT * FROM customers WHERE username = ?', [username]);
+    return result[0];
+};
+
+const deleteCustomerByUsername = async (username) => {
+    return db.query('DELETE FROM customers WHERE username = ?', [username]);
+};
+
 const createCustomer = async (customerData) => {
     const { username, full_name, email, phone, address, pt_sessions_registered, avatar } = customerData;
     const [result] = await db.query(
@@ -23,24 +32,19 @@ const createCustomer = async (customerData) => {
     return result;
 };
 
-const getCustomerByUsername = async (username) => {
-    const [result] = await db.query('SELECT * FROM customers WHERE username = ?', [username]);
-    return result[0];
-};
-
-const deleteCustomerByUsername = async (username) => {
-    return db.query('DELETE FROM customers WHERE username = ?', [username]);
-};
-
 const updateCustomerByUsername = async (username, updatedCustomer) => {
-    const { fullName, address, pt_sessions_registered, avatar } = updatedCustomer;
-    const query = `
-        UPDATE customers 
-        SET full_name = ?, address = ?, pt_sessions_registered = ?, avatar = ?
-        WHERE username = ?
-    `;
-    const values = [fullName, address, pt_sessions_registered, avatar, username];
-    return db.query(query, values);
+    const { full_name, address, pt_sessions_registered, avatar } = updatedCustomer;
+    return db.query(
+        `UPDATE customers 
+         SET full_name = ?, address = ?, pt_sessions_registered = ?, avatar = ?
+         WHERE username = ?`,
+        [full_name, address, pt_sessions_registered, avatar, username]
+    );
+};
+
+
+const updateCustomerStatus = async (username, status) => {
+    return db.query('UPDATE customers SET status = ? WHERE username = ?', [status, username]);
 };
 
 
@@ -50,5 +54,6 @@ module.exports = {
     createCustomer,
     getCustomerByUsername,
     deleteCustomerByUsername,
-    updateCustomerByUsername
+    updateCustomerByUsername,
+    updateCustomerStatus
 };

@@ -30,11 +30,8 @@ const CreateTrainer = ({ isOpen, onClose, onSubmit, errorMessage, trainer }) => 
         e.preventDefault();
 
         const trainerData = {
-            username,
             fullName,
-            email,
-            phone,
-            specialization
+            ...(trainer ? {} : { username, email, phone, specialization })
         };
 
         await onSubmit(trainerData);
@@ -61,6 +58,7 @@ const CreateTrainer = ({ isOpen, onClose, onSubmit, errorMessage, trainer }) => 
                             value={username} 
                             onChange={(e) => setUsername(e.target.value)} 
                             disabled={!!trainer}
+                            required={!trainer}
                         />
                     </div>
                     <div className="form-group">
@@ -69,6 +67,7 @@ const CreateTrainer = ({ isOpen, onClose, onSubmit, errorMessage, trainer }) => 
                             type="text" 
                             value={fullName} 
                             onChange={(e) => setFullName(e.target.value)} 
+                            required
                         />
                     </div>
                     <div className="form-group">
@@ -77,6 +76,8 @@ const CreateTrainer = ({ isOpen, onClose, onSubmit, errorMessage, trainer }) => 
                             type="email" 
                             value={email} 
                             onChange={(e) => setEmail(e.target.value)} 
+                            disabled={!!trainer}
+                            required={!trainer}
                         />
                     </div>
                     <div className="form-group">
@@ -85,6 +86,8 @@ const CreateTrainer = ({ isOpen, onClose, onSubmit, errorMessage, trainer }) => 
                             type="text" 
                             value={phone} 
                             onChange={(e) => setPhone(e.target.value)} 
+                            disabled={!!trainer}
+                            required={!trainer}
                         />
                     </div>
                     <div className="form-group">
@@ -92,6 +95,7 @@ const CreateTrainer = ({ isOpen, onClose, onSubmit, errorMessage, trainer }) => 
                         <select 
                             value={specialization} 
                             onChange={(e) => setSpecialization(e.target.value)}
+                            disabled={!!trainer}
                         >
                             <option value="trainer">Trainer</option>
                             <option value="instructor">Instructor</option>

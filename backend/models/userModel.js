@@ -12,6 +12,7 @@ const createUser = async (userData) => {
     return db.query(query, values);
 };
 
+
 const deleteUserByUsername = async (username) => {
     return db.query('DELETE FROM users WHERE username = ?', [username]);
 };
@@ -24,9 +25,15 @@ const checkUserExists = async (username, email, phone) => {
     return results;
 };
 
+const updateUserPassword = async (username, newPassword) => {
+    return db.query('UPDATE users SET password = ? WHERE username = ?', [newPassword, username]);
+};
+
+
 module.exports = {
     createUser,
     findUserByUsername,
     deleteUserByUsername,
-    checkUserExists
+    checkUserExists,
+    updateUserPassword
 };

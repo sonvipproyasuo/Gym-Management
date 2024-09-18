@@ -34,7 +34,7 @@ const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage, customer }) =
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         const customerData = {
             username,
             fullName,
@@ -44,7 +44,7 @@ const CreateCustomer = ({ isOpen, onClose, onSubmit, errorMessage, customer }) =
             pt_sessions_registered: ptSessions,
             avatar
         };
-
+    
         await onSubmit(customerData);
     };
 

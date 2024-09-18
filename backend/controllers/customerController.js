@@ -51,15 +51,16 @@ const createCustomer = async (req, res) => {
     };
 
     try {
-        const existingUser = await userModel.checkUserExists(username, email, phone);
-        if (existingUser.length > 0) {
+        const existingCustomer = await customerModel.checkCustomerExists(username, email, phone);
+
+        if (existingCustomer.length > 0) {
             const existingFields = {};
-            existingUser.forEach(user => {
-                if (user.username === username) existingFields.username = 'Username';
-                if (user.email === email) existingFields.email = 'Email';
-                if (user.phone === phone) existingFields.phone = 'Phone';
+            existingCustomer.forEach(customer => {
+                if (customer.username === username) existingFields.username = 'Username';
+                if (customer.email === email) existingFields.email = 'Email';
+                if (customer.phone === phone) existingFields.phone = 'Phone';
             });
-            return res.status(409).json({ message: 'Duplicate information in users', existingFields });
+            return res.status(409).json({ message: 'Duplicate information', existingFields });
         }
 
         const result = await customerModel.createCustomer(customerData);
@@ -92,7 +93,7 @@ const createCustomer = async (req, res) => {
         console.error('Error creating customer:', err);
         return res.status(500).json({ message: 'Error creating customer' });
     }
-};
+}
 
 const updateCustomer = async (req, res) => {
     const { username } = req.params;
@@ -107,7 +108,7 @@ const updateCustomer = async (req, res) => {
         }
 
         const updatedCustomer = {
-            fullName,
+            full_name: fullName,
             address,
             pt_sessions_registered: ptSessionsRegistered,
             avatar: avatar || customer.avatar
@@ -141,11 +142,35 @@ const deleteCustomer = async (req, res) => {
     }
 };
 
+const changePassword = async (req, res) => {
+    const { username } = req.params;
+    const { newPassword } = req.body;
+
+    try {
+        const customer = await customerModel.getCustomerByUsername(username);
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer not found' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await userModel.updateUserPassword(username, hashedPassword);
+
+        await customerModel.updateCustomerStatus(username, 'active');
+
+        return res.status(200).json({ message: 'Password changed successfully and account is now active' });
+    } catch (err) {
+        console.error('Error changing password:', err);
+        return res.status(500).json({ message: 'Failed to change password' });
+    }
+};
+
 
 module.exports = {
     getCustomers,
     checkCustomer,
     createCustomer,
     updateCustomer,
-    deleteCustomer
+    deleteCustomer,
+    changePassword
 };

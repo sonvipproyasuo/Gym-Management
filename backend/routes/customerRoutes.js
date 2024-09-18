@@ -8,5 +8,6 @@ router.get('/', customerController.getCustomers);
 router.post('/check-customer', customerController.checkCustomer);
 router.delete('/:username', customerController.deleteCustomer);
 router.put('/:username', upload.single('avatar'), customerController.updateCustomer);
+router.put('/:username/change-password', customerController.changePassword);
 
 module.exports = router;

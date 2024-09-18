@@ -30,13 +30,19 @@ const ManageTrainers = () => {
         try {
             if (selectedTrainer) {
                 await axios.put(`http://localhost:5000/api/trainers/${selectedTrainer.username}`, trainerData);
-                setTrainers(trainers.map(trainer => 
-                    trainer.username === selectedTrainer.username ? { ...trainer, ...trainerData } : trainer
-                ));
+
+                const updatedTrainers = trainers.map(trainer => 
+                    trainer.username === selectedTrainer.username 
+                        ? { ...trainer, ...trainerData, full_name: trainerData.fullName } 
+                        : trainer
+                );
+                setTrainers(updatedTrainers);
+                
                 alert('Trainer updated successfully');
             } else {
                 const response = await axios.post('http://localhost:5000/api/trainers', trainerData);
-                setTrainers([...trainers, response.data.newTrainer]);
+                
+                setTrainers([...trainers, { ...response.data.newTrainer, full_name: response.data.newTrainer.full_name }]);
                 alert('Trainer created successfully');
             }
 
@@ -55,7 +61,7 @@ const ManageTrainers = () => {
             }
         }
     };
-
+    
     const handleUpdateTrainer = (trainer) => {
         setSelectedTrainer(trainer);
         setIsModalOpen(true);
@@ -92,6 +98,7 @@ const ManageTrainers = () => {
                                     <th>Phone</th>
                                     <th>Specialization</th>
                                     <th>Actions</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -101,6 +108,7 @@ const ManageTrainers = () => {
                                         <td>{trainer.email}</td>
                                         <td>{trainer.phone}</td>
                                         <td>{trainer.specialization}</td>
+                                        <td>{trainer.status}</td>
                                         <td>
                                             <button onClick={() => handleUpdateTrainer(trainer)}>Update</button>
                                             <button onClick={() => deleteTrainer(trainer.username)}>Delete</button>

@@ -15,28 +15,8 @@ const getTrainers = async (req, res) => {
 const createTrainer = async (req, res) => {
     const { username, fullName, email, phone, specialization } = req.body;
 
-    const trainerData = {
-        username,
-        full_name: fullName,
-        email,
-        phone,
-        specialization
-    };
-
     try {
-        const existingUser = await userModel.checkUserExists(username, email, phone);
-        if (existingUser.length > 0) {
-            const existingFields = {};
-            existingUser.forEach(user => {
-                if (user.username === username) existingFields.username = 'Username';
-                if (user.email === email) existingFields.email = 'Email';
-                if (user.phone === phone) existingFields.phone = 'Phone';
-            });
-            return res.status(409).json({ message: 'Duplicate information in users', existingFields });
-        }
-
-        const result = await trainerModel.createTrainer(trainerData);
-        const newTrainerId = result.insertId;
+        const result = await trainerModel.createTrainer({ username, fullName, email, phone, specialization });
 
         const hashedPassword = await bcrypt.hash('1', 10);
         const userData = {
@@ -51,12 +31,13 @@ const createTrainer = async (req, res) => {
         return res.status(201).json({
             message: 'Trainer created successfully',
             newTrainer: {
-                id: newTrainerId,
+                id: result.insertId,
                 username,
                 full_name: fullName,
                 email,
                 phone,
-                specialization
+                specialization,
+                status: 'inactive'
             }
         });
     } catch (err) {
@@ -65,23 +46,18 @@ const createTrainer = async (req, res) => {
     }
 };
 
-
 const updateTrainer = async (req, res) => {
     const { username } = req.params;
-    const { fullName, email, phone, specialization } = req.body;
+    const { fullName } = req.body;
 
     try {
         const trainer = await trainerModel.getTrainerByUsername(username);
-
         if (!trainer) {
             return res.status(404).json({ message: 'Trainer not found' });
         }
 
         const updatedTrainer = {
-            full_name: fullName,
-            email,
-            phone,
-            specialization
+            full_name: fullName || trainer.full_name
         };
 
         await trainerModel.updateTrainerByUsername(username, updatedTrainer);
@@ -113,9 +89,33 @@ const deleteTrainer = async (req, res) => {
     }
 };
 
+const changePassword = async (req, res) => {
+    const { username } = req.params;
+    const { newPassword } = req.body;
+
+    try {
+        const trainer = await trainerModel.getTrainerByUsername(username);
+
+        if (!trainer) {
+            return res.status(404).json({ message: 'Trainer not found' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await trainerModel.updatePassword(username, hashedPassword);
+        await trainerModel.updateStatus(username, 'active');
+
+        res.status(200).json({ message: 'Password changed successfully, status updated to active' });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).json({ message: 'Failed to change password' });
+    }
+};
+
 module.exports = {
     createTrainer,
     updateTrainer,
     getTrainers,
-    deleteTrainer
+    deleteTrainer,
+    changePassword
 };
