@@ -24,7 +24,6 @@ const createTrainer = async (req, res) => {
     };
 
     try {
-        // Kiểm tra trùng lặp trong bảng users
         const existingUser = await userModel.checkUserExists(username, email, phone);
         if (existingUser.length > 0) {
             const existingFields = {};
@@ -36,11 +35,9 @@ const createTrainer = async (req, res) => {
             return res.status(409).json({ message: 'Duplicate information in users', existingFields });
         }
 
-        // Tạo trainer mới trong bảng trainers
         const result = await trainerModel.createTrainer(trainerData);
         const newTrainerId = result.insertId;
 
-        // Tạo tài khoản trainer trong bảng users với password mặc định là '1'
         const hashedPassword = await bcrypt.hash('1', 10);
         const userData = {
             username,
@@ -74,14 +71,12 @@ const updateTrainer = async (req, res) => {
     const { fullName, email, phone, specialization } = req.body;
 
     try {
-        // Kiểm tra xem trainer có tồn tại không
         const trainer = await trainerModel.getTrainerByUsername(username);
 
         if (!trainer) {
             return res.status(404).json({ message: 'Trainer not found' });
         }
 
-        // Dữ liệu để cập nhật trainer
         const updatedTrainer = {
             full_name: fullName,
             email,
@@ -89,7 +84,6 @@ const updateTrainer = async (req, res) => {
             specialization
         };
 
-        // Cập nhật trainer
         await trainerModel.updateTrainerByUsername(username, updatedTrainer);
 
         return res.status(200).json({ message: 'Trainer updated successfully' });
@@ -103,16 +97,13 @@ const deleteTrainer = async (req, res) => {
     const { username } = req.params;
 
     try {
-        // Tìm trainer dựa trên username
         const trainer = await trainerModel.getTrainerByUsername(username);
         if (!trainer) {
             return res.status(404).json({ message: 'Trainer not found' });
         }
 
-        // Xóa trainer trong bảng trainers
         await trainerModel.deleteTrainerByUsername(username);
 
-        // Xóa tài khoản tương ứng trong bảng users
         await userModel.deleteUserByUsername(username);
 
         res.status(200).json({ message: 'Trainer and corresponding account deleted successfully' });

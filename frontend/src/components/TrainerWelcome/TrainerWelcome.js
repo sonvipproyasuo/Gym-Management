@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 
-const CustomerWelcome = () => {
+const Trainer = () => {
     const { auth } = useContext(AuthContext);
 
     return (
@@ -14,4 +14,4 @@ const CustomerWelcome = () => {
     );
 };
 
-export default CustomerWelcome;
+export default Trainer;

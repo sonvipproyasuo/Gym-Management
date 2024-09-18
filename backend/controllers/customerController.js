@@ -51,7 +51,6 @@ const createCustomer = async (req, res) => {
     };
 
     try {
-        // Kiểm tra trùng lặp trong bảng users
         const existingUser = await userModel.checkUserExists(username, email, phone);
         if (existingUser.length > 0) {
             const existingFields = {};
@@ -63,11 +62,9 @@ const createCustomer = async (req, res) => {
             return res.status(409).json({ message: 'Duplicate information in users', existingFields });
         }
 
-        // Tạo khách hàng mới trong bảng customers
         const result = await customerModel.createCustomer(customerData);
         const newCustomerId = result.insertId;
 
-        // Tạo user mới trong bảng users
         const hashedPassword = await bcrypt.hash('1', 10);
         const userData = {
             username,

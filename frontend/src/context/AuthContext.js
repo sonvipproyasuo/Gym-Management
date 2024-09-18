@@ -9,9 +9,8 @@ export const AuthProvider = ({ children }) => {
     });
 
     const login = (token, user) => {
-        const authData = { token, username: user.username, role: user.role };
-        localStorage.setItem('auth', JSON.stringify(authData));
-        setAuth(authData);
+        localStorage.setItem('auth', JSON.stringify({ token, ...user }));
+        setAuth({ token, ...user });
     };
 
     const logout = () => {

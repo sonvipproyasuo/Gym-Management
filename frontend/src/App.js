@@ -8,6 +8,7 @@ import PrivateRoute from './components/PrivateRoute';
 import ManageTrainers from './components/ManageTrainers/ManageTrainers';
 import ManageCustomers from './components/ManageCustomers/ManageCustomers';
 import './App.css';
+import TrainerWelcome from './components/TrainerWelcome/TrainerWelcome';
 
 const App = () => {
     return (
@@ -15,14 +16,11 @@ const App = () => {
             <Router>
                 <Routes>
                     <Route path="/" element={<Login />} />
+                    
+                    {/* Super Admin routes */}
                     <Route path="/welcome" element={
                         <PrivateRoute requiredRole="super_admin">
                             <Welcome />
-                        </PrivateRoute>
-                    } />
-                    <Route path="/customer-welcome" element={
-                        <PrivateRoute requiredRole="customer">
-                            <CustomerWelcome />
                         </PrivateRoute>
                     } />
                     <Route path="/manage-trainers" element={
@@ -33,6 +31,20 @@ const App = () => {
                     <Route path="/manage-customers" element={
                         <PrivateRoute requiredRole="super_admin">
                             <ManageCustomers />
+                        </PrivateRoute>
+                    } />
+
+                    {/* Customer route */}
+                    <Route path="/customer-welcome" element={
+                        <PrivateRoute requiredRole="customer">
+                            <CustomerWelcome />
+                        </PrivateRoute>
+                    } />
+
+                    {/* Trainer route */}
+                    <Route path="/trainer-welcome" element={
+                        <PrivateRoute requiredRole="trainer">
+                            <TrainerWelcome />
                         </PrivateRoute>
                     } />
                 </Routes>

@@ -1,36 +1,45 @@
+const userModel = require('../models/userModel');
+const customerModel = require('../models/customerModel');
+const trainerModel = require('../models/trainerModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../config/db');
 
 const login = async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        const [user] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
-
-        if (user.length === 0) {
+        const user = await userModel.findUserByUsername(username);
+        if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const validPassword = await bcrypt.compare(password, user[0].password);
-
-        if (!validPassword) {
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
-        const token = jwt.sign({ id: user[0].id, role: user[0].role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        let additionalInfo;
+        if (user.role === 'customer') {
+            additionalInfo = await customerModel.getCustomerByUsername(user.username);
+        } else if (user.role === 'trainer') {
+            additionalInfo = await trainerModel.getTrainerByUsername(user.username);
+        }
 
-        return res.status(200).json({ 
-            message: 'Login successful', 
-            token,
-            user: { username: user[0].username, role: user[0].role }
-        });
+        const userData = {
+            username: user.username,
+            role: user.role,
+            ...additionalInfo
+        };
+
+        const token = jwt.sign({ username: user.username, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        return res.status(200).json({ token, user: userData });
     } catch (err) {
-        console.error('Login error:', err);
-        return res.status(500).json({ message: 'Internal server error' });
+        console.error('Error logging in:', err);
+        return res.status(500).json({ message: 'Error logging in' });
     }
 };
 
 module.exports = {
-    login,
+    login
 };

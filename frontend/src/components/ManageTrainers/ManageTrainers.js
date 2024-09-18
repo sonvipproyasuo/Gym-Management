@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ManageTrainers.css';
-import CreateTrainer from './CreateTrainer'; // Form create hoặc update trainer
+import CreateTrainer from './CreateTrainer';
 import { useNavigate } from 'react-router-dom';
 
 const ManageTrainers = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [trainers, setTrainers] = useState([]);
-    const [selectedTrainer, setSelectedTrainer] = useState(null);  // Lưu thông tin trainer cần cập nhật
+    const [selectedTrainer, setSelectedTrainer] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
@@ -57,8 +57,8 @@ const ManageTrainers = () => {
     };
 
     const handleUpdateTrainer = (trainer) => {
-        setSelectedTrainer(trainer);  // Chọn trainer để cập nhật
-        setIsModalOpen(true);  // Mở modal
+        setSelectedTrainer(trainer);
+        setIsModalOpen(true);
     };
 
     const deleteTrainer = async (username) => {
@@ -116,7 +116,7 @@ const ManageTrainers = () => {
                     onClose={() => { setIsModalOpen(false); setSelectedTrainer(null); }} 
                     onSubmit={handleCreateTrainer} 
                     errorMessage={errorMessage}
-                    trainer={selectedTrainer}  // Truyền dữ liệu trainer để cập nhật
+                    trainer={selectedTrainer}
                 />
                 <button className="back-button" onClick={() => navigate(-1)}>Back</button>
             </div>

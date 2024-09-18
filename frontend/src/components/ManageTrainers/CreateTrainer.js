@@ -8,23 +8,21 @@ const CreateTrainer = ({ isOpen, onClose, onSubmit, errorMessage, trainer }) => 
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
-    const [specialization, setSpecialization] = useState('trainer'); // Đặt giá trị mặc định là 'trainer'
+    const [specialization, setSpecialization] = useState('trainer');
 
     useEffect(() => {
         if (trainer) {
-            // Set giá trị mặc định khi update trainer
             setUsername(trainer.username);
             setFullName(trainer.full_name);
             setEmail(trainer.email);
             setPhone(trainer.phone);
             setSpecialization(trainer.specialization);
         } else {
-            // Reset các trường khi tạo trainer mới và đặt giá trị mặc định cho specialization
             setUsername('');
             setFullName('');
             setEmail('');
             setPhone('');
-            setSpecialization('trainer');  // Đặt giá trị mặc định khi tạo mới
+            setSpecialization('trainer');
         }
     }, [trainer]);
 
@@ -62,7 +60,7 @@ const CreateTrainer = ({ isOpen, onClose, onSubmit, errorMessage, trainer }) => 
                             type="text" 
                             value={username} 
                             onChange={(e) => setUsername(e.target.value)} 
-                            disabled={!!trainer}  // Chỉ disable khi update, không disable khi tạo mới
+                            disabled={!!trainer}
                         />
                     </div>
                     <div className="form-group">

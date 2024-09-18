@@ -13,6 +13,12 @@ const PrivateRoute = ({ children, requiredRole }) => {
         if (auth.role === 'customer') {
             return <Navigate to="/customer-welcome" />;
         }
+        if (auth.role === 'trainer') {
+            return <Navigate to="/trainer-welcome" />;
+        }
+        if (auth.role === 'super_admin') {
+            return <Navigate to="/welcome" />;
+        }
         return <Navigate to="/" />;
     }
 

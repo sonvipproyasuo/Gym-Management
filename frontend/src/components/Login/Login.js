@@ -25,15 +25,16 @@ const Login = () => {
                 username,
                 password
             });
-
-            const { token, user } = response.data;
-            login(token, user); 
     
-
-            if (user.role === 'admin') {
+            const { token, user } = response.data;
+            login(token, user);
+    
+            if (user.role === 'super_admin') {
                 navigate('/welcome');
             } else if (user.role === 'customer') {
                 navigate('/customer-welcome');
+            } else if (user.role === 'trainer') {
+                navigate('/trainer-welcome');
             }
         } catch (err) {
             if (err.response && err.response.status === 401) {
@@ -43,7 +44,7 @@ const Login = () => {
             }
         }
     };
-
+    
     return (
         <div className="login-container">
             <div className="login-box">
