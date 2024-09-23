@@ -1,50 +1,55 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
+import Notifications from '../Notifications/Notifications';
 import { useNavigate } from 'react-router-dom';
 
 const CustomerWelcome = () => {
-    const { auth, login } = useContext(AuthContext);
+    const { auth } = useContext(AuthContext);
     const navigate = useNavigate();
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
+    const [notifications, setNotifications] = useState([]);
 
     const { logout } = useContext(AuthContext);
+
+    const fetchNotifications = useCallback(async () => {
+        try {
+            const response = await axios.get(`http://localhost:5000/api/notifications/${auth.username}`);
+            setNotifications(response.data);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    }, [auth.username]);
 
     useEffect(() => {
         if (auth.status === 'inactive') {
             alert('Please change your password for the first login');
         }
-    }, [auth.status]);
+        fetchNotifications();
+    }, [auth.status, fetchNotifications]);
 
     const handleChangePassword = async () => {
         if (newPassword !== confirmPassword) {
             setError('Passwords do not match');
             return;
         }
-
+    
         try {
             await axios.put(`http://localhost:5000/api/customers/${auth.username}/change-password`, {
                 newPassword
             });
-
-            alert('Password changed successfully');
-
-           
-            const updatedCustomer = {
-                ...auth,
-                status: 'active'
-            };
-            login(auth.token, updatedCustomer);
-
-            setError('');
+            alert('Password changed successfully. Please log in again.');
+            logout();
+            navigate('/');
+            
         } catch (error) {
             console.error('Error changing password:', error);
             setError('Failed to change password. Please try again.');
         }
-    };
-
+    };    
+    
     const handleLogout = () => {
         logout();
         navigate('/');
@@ -77,6 +82,9 @@ const CustomerWelcome = () => {
                     </div>
                 )}
             </div>
+
+            <Notifications username={auth.username} token={auth.token} notifications={notifications} />
+
             <button className="logout-button" onClick={handleLogout}>Logout</button>
         </div>
     );

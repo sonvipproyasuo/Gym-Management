@@ -1,6 +1,7 @@
 const trainerModel = require('../models/trainerModel');
 const userModel = require('../models/userModel');
 const bcrypt = require('bcryptjs');
+const notificationModel = require('../models/notificationModel');
 
 const getTrainers = async (req, res) => {
     try {
@@ -27,6 +28,11 @@ const createTrainer = async (req, res) => {
             role: 'trainer'
         };
         await userModel.createUser(userData);
+
+        await notificationModel.createNotification({
+            username,
+            message: 'Your trainer account has been created successfully.'
+        });
 
         return res.status(201).json({
             message: 'Trainer created successfully',

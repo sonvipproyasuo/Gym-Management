@@ -1,5 +1,6 @@
 const customerModel = require('../models/customerModel');
 const userModel = require('../models/userModel');
+const notificationModel = require('../models/notificationModel');
 const bcrypt = require('bcryptjs');
 
 const getCustomers = async (req, res) => {
@@ -76,6 +77,11 @@ const createCustomer = async (req, res) => {
         };
         await userModel.createUser(userData);
 
+        await notificationModel.createNotification({
+            username,
+            message: "Tài khoản của bạn đã được tạo thành công!"
+        });
+
         return res.status(201).json({
             message: 'Customer created successfully',
             newCustomer: {
@@ -93,7 +99,7 @@ const createCustomer = async (req, res) => {
         console.error('Error creating customer:', err);
         return res.status(500).json({ message: 'Error creating customer' });
     }
-}
+};
 
 const updateCustomer = async (req, res) => {
     const { username } = req.params;
@@ -158,12 +164,18 @@ const changePassword = async (req, res) => {
 
         await customerModel.updateCustomerStatus(username, 'active');
 
-        return res.status(200).json({ message: 'Password changed successfully and account is now active' });
-    } catch (err) {
-        console.error('Error changing password:', err);
-        return res.status(500).json({ message: 'Failed to change password' });
+        await notificationModel.createNotification({
+            username,
+            message: "You've successfully updated your password"
+        });
+
+        res.status(200).json({ message: 'Password changed successfully' });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).json({ message: 'Failed to change password' });
     }
 };
+
 
 
 module.exports = {

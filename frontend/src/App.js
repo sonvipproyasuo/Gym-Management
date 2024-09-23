@@ -17,7 +17,6 @@ const App = () => {
                 <Routes>
                     <Route path="/" element={<Login />} />
                     
-                    {/* Super Admin routes */}
                     <Route path="/welcome" element={
                         <PrivateRoute requiredRole="super_admin">
                             <Welcome />
@@ -34,14 +33,13 @@ const App = () => {
                         </PrivateRoute>
                     } />
 
-                    {/* Customer route */}
+
                     <Route path="/customer-welcome" element={
                         <PrivateRoute requiredRole="customer">
                             <CustomerWelcome />
                         </PrivateRoute>
                     } />
 
-                    {/* Trainer route */}
                     <Route path="/trainer-welcome" element={
                         <PrivateRoute requiredRole="trainer">
                             <TrainerWelcome />

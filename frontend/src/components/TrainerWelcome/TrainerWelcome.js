@@ -1,49 +1,26 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Notifications from '../Notifications/Notifications';
 
 const TrainerWelcome = () => {
-    const { auth, login } = useContext(AuthContext);
+    const { auth, logout } = useContext(AuthContext);
     const navigate = useNavigate();
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
+    const [notifications, setNotifications] = useState([]);
+
+    const fetchNotifications = useCallback(async () => {
+        try {
+            const response = await axios.get(`http://localhost:5000/api/notifications/${auth.username}`);
+            setNotifications(response.data);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    }, [auth.username]);
 
     useEffect(() => {
-        if (auth.status === 'inactive') {
-            setSuccessMessage('Please change your password for the first login');
-        }
-    }, [auth.status]);
-
-    const { logout } = useContext(AuthContext);
-
-    const handleChangePassword = async () => {
-        if (newPassword !== confirmPassword) {
-            setError('Passwords do not match');
-            return;
-        }
-
-        try {
-            await axios.put(`http://localhost:5000/api/trainers/${auth.username}/change-password`, {
-                newPassword
-            });
-
-            alert('Password changed successfully');
-
-            const updatedTrainer = {
-                ...auth,
-                status: 'active'
-            };
-            login(auth.token, updatedTrainer);
-            setSuccessMessage('');
-            setError('');
-        } catch (error) {
-            console.error('Error changing password:', error);
-            setError('Failed to change password. Please try again.');
-        }
-    };
+        fetchNotifications();
+    }, [fetchNotifications]);
 
     const handleLogout = () => {
         logout();
@@ -55,29 +32,10 @@ const TrainerWelcome = () => {
             <div className="welcome-box">
                 <h1>Welcome, {auth.full_name}!</h1>
                 <p>This is your trainer dashboard.</p>
-                
-                {auth.status === 'inactive' && (
-                    <div className="change-password-container">
-                        <p>{successMessage}</p>
-                        <input
-                            className='password-change'
-                            type="password"
-                            placeholder="New Password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                        />
-                        <input
-                            className='password-change'
-                            type="password"
-                            placeholder="Confirm your new password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                        />
-                        <button onClick={handleChangePassword}>Change Password</button>
-                        {error && <p className="error-text">{error}</p>}
-                    </div>
-                )}
             </div>
+
+            <Notifications username={auth.username} token={auth.token} notifications={notifications} />
+
             <button className="logout-button" onClick={handleLogout}>Logout</button>
         </div>
     );
