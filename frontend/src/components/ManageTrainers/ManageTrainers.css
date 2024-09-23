@@ -126,15 +126,6 @@ button:hover {
     font-weight: bold;
 }
 
-.form-group input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    background-color: #555;
-    color: #fff;
-}
-
 .modal {
     background-color: #333;
     color: #fff;
@@ -199,12 +190,13 @@ button:hover {
     background-color: #555;
     color: #fff;
     font-size: 16px;
-    appearance: none;  /* Ẩn mũi tên mặc định trên một số trình duyệt */
+    appearance: none;
+    margin: 10px 0;
 }
 
 .form-group select:focus {
     outline: none;
-    border: 2px solid #fff;  /* Viền nổi bật khi select được chọn */
+    border: 2px solid #fff;
 }
 
 .form-group select option {

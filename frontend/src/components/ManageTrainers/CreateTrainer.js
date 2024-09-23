@@ -9,6 +9,7 @@ const CreateTrainer = ({ isOpen, onClose, onSubmit, errorMessage, trainer }) => 
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [specialization, setSpecialization] = useState('trainer');
+    const [password, setPassword] = useState('');
 
     useEffect(() => {
         if (trainer) {
@@ -23,6 +24,7 @@ const CreateTrainer = ({ isOpen, onClose, onSubmit, errorMessage, trainer }) => 
             setEmail('');
             setPhone('');
             setSpecialization('trainer');
+            setPassword('');
         }
     }, [trainer]);
 
@@ -31,7 +33,7 @@ const CreateTrainer = ({ isOpen, onClose, onSubmit, errorMessage, trainer }) => 
 
         const trainerData = {
             fullName,
-            ...(trainer ? {} : { username, email, phone, specialization })
+            ...(trainer ? {} : { username, email, phone, specialization, password })
         };
 
         await onSubmit(trainerData);
@@ -61,6 +63,17 @@ const CreateTrainer = ({ isOpen, onClose, onSubmit, errorMessage, trainer }) => 
                             required={!trainer}
                         />
                     </div>
+                    {!trainer && (
+                        <div className="form-group">
+                            <label>Password</label>
+                            <input 
+                                type="password" 
+                                value={password} 
+                                onChange={(e) => setPassword(e.target.value)} 
+                                required 
+                            />
+                        </div>
+                    )}
                     <div className="form-group">
                         <label>Full Name</label>
                         <input 

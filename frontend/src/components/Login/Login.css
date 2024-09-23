@@ -1,4 +1,3 @@
-/* Login.css */
 .login-container {
     display: flex;
     justify-content: center;
@@ -7,10 +6,10 @@
 }
 
 .login-box {
-    background-color: rgba(255, 255, 255, 0.9); /* Nền trắng với độ trong suốt để tạo hiệu ứng nổi */
+    background-color: rgba(255, 255, 255, 0.9);
     padding: 40px;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Hiệu ứng đổ bóng */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 300px;
     text-align: center;
 }

@@ -26,11 +26,11 @@ const ManageTrainers = () => {
 
     const handleCreateTrainer = async (trainerData) => {
         setErrorMessage('');
-
+    
         try {
             if (selectedTrainer) {
                 await axios.put(`http://localhost:5000/api/trainers/${selectedTrainer.username}`, trainerData);
-
+    
                 const updatedTrainers = trainers.map(trainer => 
                     trainer.username === selectedTrainer.username 
                         ? { ...trainer, ...trainerData, full_name: trainerData.fullName } 
@@ -45,7 +45,7 @@ const ManageTrainers = () => {
                 setTrainers([...trainers, { ...response.data.newTrainer, full_name: response.data.newTrainer.full_name }]);
                 alert('Trainer created successfully');
             }
-
+    
             setIsModalOpen(false);
             setSelectedTrainer(null);
         } catch (error) {

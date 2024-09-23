@@ -126,15 +126,6 @@ button:hover {
     font-weight: bold;
 }
 
-.form-group input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    background-color: #555;
-    color: #fff;
-}
-
 .modal {
     background-color: #333;
     color: #fff;
