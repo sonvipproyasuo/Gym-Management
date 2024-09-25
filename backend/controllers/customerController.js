@@ -79,7 +79,7 @@ const createCustomer = async (req, res) => {
 
         await notificationModel.createNotification({
             username,
-            message: "Tài khoản của bạn đã được tạo thành công!"
+            message: "Your customer account has been created successfully."
         });
 
         return res.status(201).json({

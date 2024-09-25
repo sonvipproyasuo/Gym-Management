@@ -14,12 +14,12 @@ const getTrainers = async (req, res) => {
 };
 
 const createTrainer = async (req, res) => {
-    const { username, fullName, email, phone, specialization } = req.body;
+    const { username, fullName, email, phone, specialization, password } = req.body;
 
     try {
         const result = await trainerModel.createTrainer({ username, fullName, email, phone, specialization });
 
-        const hashedPassword = await bcrypt.hash('1', 10);
+        const hashedPassword = await bcrypt.hash(password, 10);
         const userData = {
             username,
             password: hashedPassword,
@@ -43,7 +43,7 @@ const createTrainer = async (req, res) => {
                 email,
                 phone,
                 specialization,
-                status: 'inactive'
+                status: 'active'
             }
         });
     } catch (err) {
