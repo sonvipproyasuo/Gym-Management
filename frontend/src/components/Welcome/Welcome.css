@@ -15,6 +15,10 @@
     width: 400px;
 }
 
+.welcome-box.trainer {
+    width: 800px;
+}
+
 h1 {
     font-size: 32px;
     margin-bottom: 20px;
@@ -64,4 +68,12 @@ button:hover {
     width: 80%;
     margin-bottom: 10px;
     padding: 10px;
+}
+
+.calendar-container {
+    height: 400px;
+}
+
+.calendar-container .fc-media-screen {
+    height: 100%;
 }

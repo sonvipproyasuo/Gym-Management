@@ -3,6 +3,7 @@ import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Notifications from '../Notifications/Notifications';
+import ClassSchedule from '../ClassSchedule/ClassSchedule';
 
 const TrainerWelcome = () => {
     const { auth, logout } = useContext(AuthContext);
@@ -29,11 +30,11 @@ const TrainerWelcome = () => {
 
     return (
         <div className="welcome-container">
-            <div className="welcome-box">
+            <div className="welcome-box trainer">
                 <h1>Welcome, {auth.full_name}!</h1>
-                <p>This is your trainer dashboard.</p>
+                <p>Your role is: {auth.specialization}</p>
+                {auth.specialization === 'instructor' && <ClassSchedule username={auth.username}/>}
             </div>
-
             <Notifications username={auth.username} token={auth.token} notifications={notifications} />
 
             <button className="logout-button" onClick={handleLogout}>Logout</button>

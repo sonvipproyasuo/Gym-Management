@@ -126,6 +126,17 @@ button:hover {
     font-weight: bold;
 }
 
+.form-group textarea {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: #555;
+    color: #fff;
+    height: 60px;
+    width: 80%;
+    margin: 10px 0;
+}
+
 .modal {
     background-color: #333;
     color: #fff;
