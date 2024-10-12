@@ -14,7 +14,18 @@ const getRegistrationsForClass = async (class_id) => {
     return result;
 };
 
+const getParticipantsByClassId = async (classId) => {
+    const query = `
+        SELECT customer_username FROM class_registrations 
+        WHERE class_id = ?
+    `;
+    const [rows] = await db.execute(query, [classId]);
+    return rows.map(row => row.customer_username);
+};
+
+
 module.exports = {
     registerForClass,
-    getRegistrationsForClass
+    getRegistrationsForClass,
+    getParticipantsByClassId
 };

@@ -59,46 +59,63 @@ const ClassSchedule = ({ username }) => {
     };    
 
     const handleUpdateClass = async () => {
-        console.log(selectedClassId)
-        try {
-            await axios.put(`http://localhost:5000/api/classes/${selectedClassId}`, {
-                ...classDetails,
-                instructor_username: username
-            });
+        if (window.confirm("Are you sure you want to update this class?")) {
+            try {
+                await axios.put(`http://localhost:5000/api/classes/${selectedClassId}`, {
+                    ...classDetails,
+                    instructor_username: username
+                });
+            
+                fetchClasses();
+                setIsModalOpen(false);
+                resetClassDetails();
+            } catch (error) {
+                console.error('Error updating class:', error);
+            }
+        }
+    };
     
-            fetchClasses();
-            setIsModalOpen(false);
-            resetClassDetails();
-        } catch (error) {
-            console.error('Error updating class:', error);
-        }
-    };
-
     const handleDeleteClass = async () => {
-        try {
-            await axios.delete(`http://localhost:5000/api/classes/${selectedClassId}`);
-
-            fetchClasses();
-
-            setIsModalOpen(false);
-            resetClassDetails();
-        } catch (error) {
-            console.error('Error deleting class:', error);
+        if (window.confirm("Are you sure you want to delete this class?")) {
+            try {
+                await axios.delete(`http://localhost:5000/api/classes/${selectedClassId}`);
+    
+                fetchClasses();
+                setIsModalOpen(false);
+                resetClassDetails();
+            } catch (error) {
+                console.error('Error deleting class:', error);
+            }
         }
     };
 
-    const handleEventClick = (event) => {
+    const handleEventClick = async (event) => {
         const classId = event.event.extendedProps.id;
         setSelectedClassId(classId);
-        setClassDetails({
-            title: event.event.title,
-            description: event.event.extendedProps.description,
-            time: event.event.start.toISOString().slice(0, 16),
-            maxParticipants: event.event.extendedProps.maxParticipants,
-            duration: (event.event.end.getTime() - event.event.start.getTime()) / 60000
-        });
-        setIsUpdateMode(true);
-        setIsModalOpen(true);
+    
+        // Fetch danh sách người tham gia
+        try {
+            const response = await axios.get(`http://localhost:5000/api/classes/${classId}/participants`);
+            const participants = response.data; // API trả về danh sách usernames
+    
+            // Chuyển đổi giờ UTC về local time
+            const localTime = new Date(event.event.start.getTime() - event.event.start.getTimezoneOffset() * 60000)
+                .toISOString()
+                .slice(0, 16);
+    
+            setClassDetails({
+                title: event.event.title,
+                description: event.event.extendedProps.description,
+                time: localTime,
+                maxParticipants: event.event.extendedProps.maxParticipants,
+                duration: (event.event.end.getTime() - event.event.start.getTime()) / 60000,
+                participants: participants // Lưu danh sách người tham gia vào state
+            });
+            setIsUpdateMode(true);
+            setIsModalOpen(true);
+        } catch (error) {
+            console.error('Error fetching participants:', error);
+        }
     };
 
     const resetClassDetails = () => {

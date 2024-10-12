@@ -4,6 +4,7 @@ import Modal from 'react-modal';
 Modal.setAppElement('#root');
 
 const ClassPopup = ({ isOpen, onClose, onSubmit, onDelete, classDetails, setClassDetails, isUpdateMode }) => {
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         await onSubmit();
@@ -38,11 +39,22 @@ const ClassPopup = ({ isOpen, onClose, onSubmit, onDelete, classDetails, setClas
                         />
                     </div>
                     <div className="form-group">
-                        <label>Time</label>
+                        <label>Date</label>
                         <input
-                            type="datetime-local"
-                            value={classDetails.time || ''}
-                            onChange={(e) => setClassDetails({ ...classDetails, time: e.target.value })}
+                            type="date"
+                            value={classDetails.time ? classDetails.time.split('T')[0] : ''}
+                            onChange={(e) => setClassDetails({ ...classDetails, time: `${e.target.value}T${classDetails.time.split('T')[1]}` })}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Start Time</label>
+                        <input
+                            type="time"
+                            value={classDetails.time ? classDetails.time.split('T')[1] : ''}
+                            onChange={(e) => setClassDetails({ ...classDetails, time: `${classDetails.time.split('T')[0]}T${e.target.value}` })}
+                            min="08:00"
+                            max="20:00"
                             required
                         />
                     </div>
@@ -64,6 +76,17 @@ const ClassPopup = ({ isOpen, onClose, onSubmit, onDelete, classDetails, setClas
                             required
                         />
                     </div>
+                    {/* Hiển thị danh sách người tham gia */}
+                    {classDetails.participants && (
+                        <div className="form-group">
+                            <label>Participants</label>
+                            <ul>
+                                {classDetails.participants.map((participant, index) => (
+                                    <li key={index}>{participant}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                 </div>
 
                 <div className="form-actions">

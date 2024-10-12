@@ -22,4 +22,5 @@ const registerForClass = async (req, res) => {
 
 module.exports = {
     registerForClass
+    
 };

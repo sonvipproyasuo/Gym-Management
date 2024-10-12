@@ -5,6 +5,7 @@ const classRegistrationController = require('../controllers/classRegistrationCon
 
 router.post('/classes', classController.createClass);
 router.get('/classes/:username', classController.getClassesByInstructor);
+router.get('/classes/:id/participants', classController.getClassParticipants);
 router.put('/classes/:id', classController.updateClass);
 router.delete('/classes/:id', classController.deleteClass);
 
