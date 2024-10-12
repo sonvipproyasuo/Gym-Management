@@ -93,12 +93,10 @@ const ClassSchedule = ({ username }) => {
         const classId = event.event.extendedProps.id;
         setSelectedClassId(classId);
     
-        // Fetch danh sách người tham gia
         try {
             const response = await axios.get(`http://localhost:5000/api/classes/${classId}/participants`);
-            const participants = response.data; // API trả về danh sách usernames
+            const participants = response.data;
     
-            // Chuyển đổi giờ UTC về local time
             const localTime = new Date(event.event.start.getTime() - event.event.start.getTimezoneOffset() * 60000)
                 .toISOString()
                 .slice(0, 16);
@@ -109,7 +107,7 @@ const ClassSchedule = ({ username }) => {
                 time: localTime,
                 maxParticipants: event.event.extendedProps.maxParticipants,
                 duration: (event.event.end.getTime() - event.event.start.getTime()) / 60000,
-                participants: participants // Lưu danh sách người tham gia vào state
+                participants: participants
             });
             setIsUpdateMode(true);
             setIsModalOpen(true);

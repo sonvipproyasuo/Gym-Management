@@ -52,11 +52,48 @@ const deleteClassById = async (id) => {
     await db.execute(query, [id]);
 };
 
+const getAvailableClasses = async (currentTime) => {
+    const query = `
+        SELECT classes.*, trainers.full_name 
+        FROM classes 
+        JOIN trainers ON classes.instructor_username = trainers.username 
+        WHERE classes.time > ?
+    `;
+    const [rows] = await db.execute(query, [currentTime]);
+    return rows;
+};
+
+const getAvailableClassesForUser = async (username) => {
+    const currentTime = new Date();
+
+    const query = `
+        SELECT 
+            classes.*, 
+            trainers.full_name,
+            (classes.max_participants - COUNT(class_registrations.customer_username)) AS available_slots
+        FROM classes 
+        LEFT JOIN class_registrations ON classes.id = class_registrations.class_id
+        JOIN trainers ON classes.instructor_username = trainers.username
+        WHERE classes.time > ?  
+        AND classes.id NOT IN (
+            SELECT class_id 
+            FROM class_registrations 
+            WHERE customer_username = ?
+        )
+        GROUP BY classes.id
+    `;
+
+    const [availableClasses] = await db.execute(query, [currentTime, username]);
+    return availableClasses;
+};
+
 module.exports = {
     createClass,
     getClassesByInstructor,
     getClassesByTime,
     updateClass,
     deleteClassById,
-    getClassById
+    getClassById,
+    getAvailableClasses,
+    getAvailableClassesForUser
 };

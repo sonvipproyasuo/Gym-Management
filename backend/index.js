@@ -15,10 +15,15 @@ app.use(express.json());
 app.use(cors());
 app.use('/api/auth', authRoutes);
 app.use('/api/customers', customerRoutes);
-app.use('/api/trainers', trainerRoutes); 
+app.use('/api/trainers', trainerRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/notifications', notificationRoutes);
 app.use('/api', classRoutes);
+
+app.use((req, res, next) => {
+    console.log(`Request received: ${req.method} ${req.url}`);
+    next();
+});
 
 const PORT = process.env.PORT || 5000;
 

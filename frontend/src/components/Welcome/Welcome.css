@@ -12,12 +12,9 @@
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
-    width: 400px;
-}
-
-.welcome-box.trainer {
     width: 800px;
 }
+
 
 h1 {
     font-size: 32px;

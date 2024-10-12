@@ -119,10 +119,22 @@ const deleteClass = async (req, res) => {
     }
 };
 
+const getAvailableClasses = async (req, res) => {
+    try {
+        const currentTime = new Date();
+        const availableClasses = await classModel.getAvailableClasses(currentTime);
+        res.status(200).json(availableClasses);
+    } catch (error) {
+        console.error('Error fetching available classes:', error);
+        res.status(500).json({ message: 'Failed to fetch available classes' });
+    }
+};
+
 module.exports = {
     createClass,
     getClassesByInstructor,
     updateClass,
     deleteClass,
-    getClassParticipants
+    getClassParticipants,
+    getAvailableClasses
 };
