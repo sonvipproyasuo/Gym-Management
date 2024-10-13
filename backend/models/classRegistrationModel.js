@@ -85,6 +85,27 @@ const getParticipantsByClassId = async (classId) => {
     return rows.map(row => row.full_name);
 };
 
+const checkIfUserHasClassAtSameTime = async (customer_username, class_time, class_duration) => {
+    const query = `
+        SELECT COUNT(*) as count
+        FROM class_registrations 
+        JOIN classes ON class_registrations.class_id = classes.id
+        WHERE class_registrations.customer_username = ?
+        AND (
+            (classes.time <= ? AND ADDTIME(classes.time, SEC_TO_TIME(classes.duration * 60)) > ?)
+        )
+    `;
+
+    const [rows] = await db.execute(query, [customer_username, class_time, class_time]);
+    return rows[0].count > 0;
+};
+
+const getCustomerByUsername = async (username) => {
+    const query = 'SELECT full_name FROM customers WHERE username = ?';
+    const [rows] = await db.execute(query, [username]);
+    return rows[0]; // Trả về full_name nếu tìm thấy
+};
+
 module.exports = {
     getClassById,
     getRegistrationCount,
@@ -92,6 +113,8 @@ module.exports = {
     checkIfAlreadyRegistered,
     unregisterFromClass,
     getAvailableClassesForUser,
-    getParticipantsByClassId
+    getParticipantsByClassId,
+    checkIfUserHasClassAtSameTime,
+    getCustomerByUsername
 };
 
