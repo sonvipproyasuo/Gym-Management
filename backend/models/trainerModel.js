@@ -42,6 +42,14 @@ const updateStatus = async (username, status) => {
     return db.query(query, [status, username]);
 };
 
+const getAvailableTrainers = async () => {
+    const query = `
+        SELECT * FROM trainers
+        WHERE specialization = 'trainer'
+    `;
+    const [rows] = await db.execute(query);
+    return rows;
+};
 
 module.exports = {
     createTrainer,
@@ -50,5 +58,6 @@ module.exports = {
     getAllTrainers,
     deleteTrainerByUsername,
     updatePassword,
-    updateStatus
+    updateStatus,
+    getAvailableTrainers
 };

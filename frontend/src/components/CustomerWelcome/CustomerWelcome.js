@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import Calendar from '../Calendar/Calendar';
 import AvailableClasses from '../AvailableClasses/AvailableClasses';
 import ClassPopup from '../AvailableClasses/ClassPopup';
+import PTSessionPopup from '../PTSession/PTSessionPopup'; 
+import PTSessionInformation from '../PTSession/PTSessionInformation';
 import Modal from 'react-modal';
 
 Modal.setAppElement('#root');
@@ -20,9 +22,14 @@ const CustomerWelcome = () => {
     const [isPasswordReset, setIsPasswordReset] = useState(auth.status !== 'inactive');
     const [isAvailableClassesOpen, setIsAvailableClassesOpen] = useState(false);
     const [isClassPopupOpen, setIsClassPopupOpen] = useState(false);
+    const [isPTSessionPopupOpen, setIsPTSessionPopupOpen] = useState(false);
+    const [isPTSessionInformationOpen, setIsPTSessionInformationOpen] = useState(false);
     const [availableClasses, setAvailableClasses] = useState([]);
     const [registeredClasses, setRegisteredClasses] = useState([]);
+    const [ptSessions, setPTSessions] = useState([]);
+    const [trainers, setTrainers] = useState([]);
     const [selectedClass, setSelectedClass] = useState(null);
+    const [selectedPTSession, setSelectedPTSession] = useState(null);
     const [isFetching, setIsFetching] = useState(false);
 
     const { logout } = useContext(AuthContext);
@@ -43,6 +50,8 @@ const CustomerWelcome = () => {
             fetchNotifications();
             fetchRegisteredClasses();
             fetchAvailableClasses();
+            fetchAvailablePTs();
+            fetchPTSessions();
         }
     }, [isPasswordReset, fetchNotifications]);
 
@@ -65,6 +74,24 @@ const CustomerWelcome = () => {
             setRegisteredClasses(response.data);
         } catch (error) {
             console.error('Error fetching registered classes:', error);
+        }
+    };
+
+    const fetchAvailablePTs = async () => {
+        try {
+            const response = await axios.get(`http://localhost:5000/api/trainers/trainerslist`);
+            setTrainers(response.data);
+        } catch (error) {
+            console.error('Error fetching trainers:', error);
+        }
+    };
+
+    const fetchPTSessions = async () => {
+        try {
+            const response = await axios.get(`http://localhost:5000/api/pt-sessions/${auth.username}`);
+            setPTSessions(response.data);
+        } catch (error) {
+            console.error('Error fetching PT sessions:', error);
         }
     };
 
@@ -93,14 +120,30 @@ const CustomerWelcome = () => {
     };
 
     const handleEventClick = (event) => {
-        setSelectedClass({
-            id: event.event.extendedProps.id,
-            title: event.event.title,
-            description: event.event.extendedProps.description,
-            time: event.event.start.toISOString(),
-            full_name: event.event.extendedProps.full_name
-        });
-        setIsClassPopupOpen(true);
+        const isPTSession = event.event.title.includes('PT session');
+    
+        if (isPTSession) {
+            const status = event.event.extendedProps.status;
+
+            setSelectedPTSession({
+                id: event.event.extendedProps.id,
+                title: event.event.title,
+                description: event.event.extendedProps.description,
+                full_name: event.event.extendedProps.full_name,
+                time: event.event.start.toISOString(),
+                status: status
+            });
+            setIsPTSessionInformationOpen(true);
+        } else {
+            setSelectedClass({
+                id: event.event.extendedProps.id,
+                title: event.event.title,
+                description: event.event.extendedProps.description,
+                time: event.event.start.toISOString(),
+                full_name: event.event.extendedProps.full_name
+            });
+            setIsClassPopupOpen(true);
+        }
     };
 
     const handleUnregisterSuccess = () => {
@@ -108,6 +151,41 @@ const CustomerWelcome = () => {
         fetchRegisteredClasses();
         fetchAvailableClasses();
     };
+
+    const allEvents = [
+        ...registeredClasses.map(cls => ({
+            title: cls.title,
+            start: cls.time,
+            end: new Date(new Date(cls.time).getTime() + cls.duration * 60000),
+            extendedProps: {
+                id: cls.id,
+                description: cls.description,
+                full_name: cls.full_name
+            }
+        })),
+        ...ptSessions.map(session => {
+            const sessionDateOnly = session.session_date.split('T')[0];
+            const startTime = new Date(`${sessionDateOnly}T${session.start_time}`);
+            const endTime = new Date(startTime.getTime() + 60 * 60000);
+
+            if (isNaN(startTime.getTime())) {
+                console.error('Invalid time value:', session);
+                return null;
+            }
+
+            return {
+                title: `PT session - ${session.full_name ? session.full_name : 'Unknown'} (${session.status.toUpperCase()})`,
+                start: startTime.toISOString(),
+                end: endTime.toISOString(),
+                extendedProps: {
+                    id: session.id,
+                    description: `PT session with ${session.full_name ? session.full_name : 'Unknown'}`,
+                    full_name: session.full_name,
+                    status: session.status
+                }
+            };
+        }).filter(event => event !== null)
+    ];
 
     if (!isPasswordReset) {
         return (
@@ -154,17 +232,10 @@ const CustomerWelcome = () => {
                     setIsAvailableClassesOpen(true);
                 }}>Register a Class</button>
 
+                <button onClick={() => setIsPTSessionPopupOpen(true)}>Book a PT Session</button>
+
                 <Calendar
-                    events={registeredClasses.map(cls => ({
-                        title: cls.title,
-                        start: cls.time,
-                        end: new Date(new Date(cls.time).getTime() + cls.duration * 60000),
-                        extendedProps: {
-                            id: cls.id,
-                            description: cls.description,
-                            full_name: cls.full_name
-                        }
-                    }))}
+                    events={allEvents}
                     onSelectEvent={handleEventClick}
                 />
 
@@ -193,6 +264,38 @@ const CustomerWelcome = () => {
                             setIsAvailableClassesOpen(false);
                             fetchRegisteredClasses();
                             fetchAvailableClasses();
+                        }}
+                    />
+                </Modal>
+
+                <Modal
+                    isOpen={isPTSessionPopupOpen}
+                    onRequestClose={() => setIsPTSessionPopupOpen(false)}
+                    className="modal"
+                    overlayClassName="ReactModal__Overlay"
+                >
+                    <PTSessionPopup
+                        trainers={trainers}
+                        username={auth.username}
+                        onClose={() => {
+                            setIsPTSessionPopupOpen(false);
+                            fetchPTSessions();
+                        }}
+                    />
+                </Modal>
+
+                <Modal
+                    isOpen={isPTSessionInformationOpen}
+                    onRequestClose={() => setIsPTSessionInformationOpen(false)}
+                    className="modal"
+                    overlayClassName="ReactModal__Overlay"
+                >
+                    <PTSessionInformation
+                        classDetails={selectedPTSession}
+                        onClose={() => setIsPTSessionInformationOpen(false)}
+                        onDeleteSuccess={() => {
+                            fetchPTSessions();
+                            setIsPTSessionInformationOpen(false);
                         }}
                     />
                 </Modal>

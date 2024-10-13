@@ -103,7 +103,7 @@ const checkIfUserHasClassAtSameTime = async (customer_username, class_time, clas
 const getCustomerByUsername = async (username) => {
     const query = 'SELECT full_name FROM customers WHERE username = ?';
     const [rows] = await db.execute(query, [username]);
-    return rows[0]; // Trả về full_name nếu tìm thấy
+    return rows[0];
 };
 
 module.exports = {

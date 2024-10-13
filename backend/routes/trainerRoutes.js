@@ -7,5 +7,5 @@ router.put('/:username', trainerController.updateTrainer);
 router.get('/', trainerController.getTrainers);
 router.delete('/:username', trainerController.deleteTrainer);
 router.put('/:username/change-password', trainerController.changePassword);
-
+router.get('/trainerslist', trainerController.getTrainersList);
 module.exports = router;

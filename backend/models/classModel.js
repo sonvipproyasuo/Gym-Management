@@ -87,6 +87,12 @@ const getAvailableClassesForUser = async (username) => {
     return availableClasses;
 };
 
+const checkIfClassExists = async (classId) => {
+    const query = 'SELECT COUNT(*) as count FROM classes WHERE id = ?';
+    const [rows] = await db.execute(query, [classId]);
+    return rows[0].count > 0;
+};
+
 module.exports = {
     createClass,
     getClassesByInstructor,
@@ -95,5 +101,6 @@ module.exports = {
     deleteClassById,
     getClassById,
     getAvailableClasses,
-    getAvailableClassesForUser
+    getAvailableClassesForUser,
+    checkIfClassExists
 };

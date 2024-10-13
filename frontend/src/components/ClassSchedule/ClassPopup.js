@@ -76,7 +76,6 @@ const ClassPopup = ({ isOpen, onClose, onSubmit, onDelete, classDetails, setClas
                             required
                         />
                     </div>
-                    {/* Hiển thị danh sách người tham gia */}
                     {classDetails.participants && (
                         <div className="form-group">
                             <label>Participants</label>
