@@ -4,6 +4,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Notifications from '../Notifications/Notifications';
 import ClassSchedule from '../ClassSchedule/ClassSchedule';
+import TrainerPTSessions from '../PTSession/TrainerPTSessions';
 
 const TrainerWelcome = () => {
     const { auth, logout } = useContext(AuthContext);
@@ -33,8 +34,14 @@ const TrainerWelcome = () => {
             <div className="welcome-box trainer">
                 <h1>Welcome, {auth.full_name}!</h1>
                 <p>Your role is: {auth.specialization}</p>
-                {auth.specialization === 'instructor' && <ClassSchedule username={auth.username}/>}
+                
+                {/* Hiển thị lịch của instructor */}
+                {auth.specialization === 'instructor' && <ClassSchedule username={auth.username} />}
+
+                {/* Hiển thị quản lý PT sessions cho trainer */}
+                {auth.specialization === 'trainer' && <TrainerPTSessions trainerUsername={auth.username} />}
             </div>
+
             <Notifications username={auth.username} token={auth.token} notifications={notifications} />
 
             <button className="logout-button" onClick={handleLogout}>Logout</button>

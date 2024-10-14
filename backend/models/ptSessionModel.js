@@ -19,7 +19,7 @@ const checkTrainerAvailability = async (trainer_username, session_date, start_ti
         AND available_date = ? 
         AND start_time <= ? 
         AND end_time >= ? 
-        AND is_booked = 1
+        AND is_booked = 0
     `;
     const [rows] = await db.execute(query, [trainer_username, session_date, start_time, start_time]);
 
@@ -72,9 +72,11 @@ const deleteSession = async (session_id) => {
 
 const getPendingSessions = async (trainer_username) => {
     const query = `
-        SELECT * FROM pt_sessions 
-        WHERE trainer_username = ? 
-        AND status = 'pending'
+        SELECT pt_sessions.*, customers.full_name AS customer_full_name 
+        FROM pt_sessions
+        JOIN customers ON pt_sessions.customer_username = customers.username
+        WHERE pt_sessions.trainer_username = ? 
+        AND pt_sessions.status = 'pending'
     `;
     const [rows] = await db.execute(query, [trainer_username]);
     return rows;
@@ -100,6 +102,27 @@ const getSessionsByCustomer = async (customer_username) => {
     return rows;
 };
 
+const getConfirmedSessions = async (trainer_username) => {
+    const query = `
+        SELECT pt_sessions.*, customers.full_name AS customer_full_name 
+        FROM pt_sessions
+        JOIN customers ON pt_sessions.customer_username = customers.username
+        WHERE pt_sessions.trainer_username = ? 
+        AND pt_sessions.status = 'confirmed'
+    `;
+    const [rows] = await db.execute(query, [trainer_username]);
+    return rows;
+};
+
+const getSessionById = async (session_id) => {
+    const query = `
+        SELECT * FROM pt_sessions 
+        WHERE id = ?
+    `;
+    const [rows] = await db.execute(query, [session_id]);
+    return rows[0];
+};
+
 module.exports = {
     checkExistingSession,
     checkTrainerAvailability,
@@ -110,5 +133,7 @@ module.exports = {
     deleteSession,
     getPendingSessions,
     getAvailableTrainers,
-    getSessionsByCustomer
+    getSessionsByCustomer,
+    getConfirmedSessions,
+    getSessionById
 };
