@@ -18,4 +18,8 @@ router.put('/pt-sessions/confirm', ptSessionController.confirmPTSession);
 
 router.put('/pt-sessions/cancel', ptSessionController.cancelPTSession);
 
+router.post('/pt-sessions/confirm-delete', ptSessionController.confirmDeletePTSession);
+
+router.put('/pt-sessions/request-delete', ptSessionController.requestDeletePTSession);
+
 module.exports = router;

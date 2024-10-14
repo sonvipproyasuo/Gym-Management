@@ -26,12 +26,12 @@ const checkTrainerAvailability = async (trainer_username, session_date, start_ti
     return rows.length === 0;
 };
 
-const bookSession = async (customer_username, trainer_username, session_date, start_time) => {
+const bookSession = async (customer_username, trainer_username, session_date, start_time, pending_action) => {
     const query = `
-        INSERT INTO pt_sessions (customer_username, trainer_username, session_date, start_time, status)
-        VALUES (?, ?, ?, ?, 'pending')
+        INSERT INTO pt_sessions (customer_username, trainer_username, session_date, start_time, status, pending_action)
+        VALUES (?, ?, ?, ?, 'pending', ?)
     `;
-    await db.execute(query, [customer_username, trainer_username, session_date, start_time]);
+    await db.execute(query, [customer_username, trainer_username, session_date, start_time, pending_action]);
 };
 
 const confirmSession = async (session_id) => {
@@ -123,6 +123,24 @@ const getSessionById = async (session_id) => {
     return rows[0];
 };
 
+const updateSessionStatus = async (session_id, status) => {
+    const query = `
+        UPDATE pt_sessions 
+        SET status = ? 
+        WHERE id = ?
+    `;
+    await db.execute(query, [status, session_id]);
+};
+
+const updatePendingAction = async (session_id, pending_action) => {
+    const query = `
+        UPDATE pt_sessions 
+        SET pending_action = ? 
+        WHERE id = ?
+    `;
+    await db.execute(query, [pending_action, session_id]);
+};
+
 module.exports = {
     checkExistingSession,
     checkTrainerAvailability,
@@ -135,5 +153,7 @@ module.exports = {
     getAvailableTrainers,
     getSessionsByCustomer,
     getConfirmedSessions,
-    getSessionById
+    getSessionById,
+    updatePendingAction,
+    updateSessionStatus
 };

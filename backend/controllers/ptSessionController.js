@@ -19,7 +19,7 @@ const bookPTSession = async (req, res) => {
             return res.status(400).json({ message: 'Trainer is not available at this time.', details: { trainer_username, session_date, start_time } });
         }
 
-        await ptSessionModel.bookSession(customer_username, trainer_username, session_date, start_time);
+        await ptSessionModel.bookSession(customer_username, trainer_username, session_date, start_time, 'create');
         return res.status(201).json({ message: 'PT session booked successfully. Waiting for trainer confirmation.' });
 
     } catch (error) {
@@ -29,33 +29,20 @@ const bookPTSession = async (req, res) => {
 };
 
 const confirmPTSession = async (req, res) => {
-    const { session_id, action_type } = req.body;
+    const { session_id } = req.body;
 
     try {
         const session = await ptSessionModel.getSessionById(session_id);
 
         if (!session) {
-            return res.status(404).json({ message: 'PT session not found' });
+            return res.status(404).json({ message: 'PT session not found.' });
         }
 
-        switch (action_type) {
-            case 'create': {
-                await ptSessionModel.confirmSession(session_id);
-                return res.status(200).json({ message: 'PT session confirmed successfully.' });
-            }
-            case 'update': {
-                const { new_session_date, new_start_time } = req.body;
-                await ptSessionModel.updateSession(session_id, new_session_date, new_start_time);
-                return res.status(200).json({ message: 'PT session updated successfully.' });
-            }
-            case 'delete': {
-                await ptSessionModel.deleteSession(session_id);
-                return res.status(200).json({ message: 'PT session deleted successfully.' });
-            }
-            default: {
-                return res.status(400).json({ message: 'Invalid action type' });
-            }
-        }
+        await ptSessionModel.confirmSession(session_id);
+        await ptSessionModel.updatePendingAction(session_id, 'none');
+        
+        return res.status(200).json({ message: 'PT session confirmed successfully.' });
+
     } catch (error) {
         console.error('Error confirming PT session:', error);
         return res.status(500).json({ message: 'Failed to confirm PT session' });
@@ -73,15 +60,10 @@ const cancelPTSession = async (req, res) => {
         }
 
         switch (action_type) {
-            case 'create': {
-                await ptSessionModel.deleteSession(session_id);
-                return res.status(200).json({ message: 'Pending PT session creation has been canceled.' });
-            }
-            case 'update': {
-                return res.status(200).json({ message: 'PT session update has been canceled. The session remains unchanged.' });
-            }
             case 'delete': {
-                return res.status(200).json({ message: 'PT session deletion has been canceled.' });
+                await ptSessionModel.updatePendingAction(session_id, 'none');
+                await ptSessionModel.updateSessionStatus(session_id, 'confirmed');
+                return res.status(200).json({ message: 'PT session deletion request has been canceled.' });
             }
             default: {
                 return res.status(400).json({ message: 'Invalid action type' });
@@ -92,7 +74,6 @@ const cancelPTSession = async (req, res) => {
         return res.status(500).json({ message: 'Failed to cancel PT session' });
     }
 };
-
 
 const updatePTSession = async (req, res) => {
     const { session_id, new_session_date, new_start_time } = req.body;
@@ -175,6 +156,50 @@ const getConfirmedPTSessions = async (req, res) => {
     }
 };
 
+const requestDeletePTSession = async (req, res) => {
+    const { session_id } = req.body;
+
+    try {
+        const session = await ptSessionModel.getSessionById(session_id);
+        if (!session) {
+            return res.status(404).json({ message: 'PT session not found.' });
+        }
+
+        await ptSessionModel.updatePendingAction(session_id, 'delete');
+        await ptSessionModel.updateSessionStatus(session_id, 'pending');
+
+        return res.status(200).json({ message: 'PT session delete requested. Waiting for trainer confirmation.' });
+    } catch (error) {
+        console.error('Error requesting PT session delete:', error);
+        return res.status(500).json({ message: 'Failed to request PT session delete' });
+    }
+};
+
+const confirmDeletePTSession = async (req, res) => {
+    const { session_id, action } = req.body;
+
+    try {
+        const session = await ptSessionModel.getSessionById(session_id);
+        if (!session) {
+            return res.status(404).json({ message: 'PT session not found.' });
+        }
+
+        if (action === 'confirm') {
+            await ptSessionModel.deleteSession(session_id);
+            return res.status(200).json({ message: 'PT session deleted successfully.' });
+        } else if (action === 'reject') {
+            await ptSessionModel.updatePendingAction(session_id, 'none');
+            await ptSessionModel.updateSessionStatus(session_id, 'confirmed');
+            return res.status(200).json({ message: 'PT session delete request rejected.' });
+        } else {
+            return res.status(400).json({ message: 'Invalid action.' });
+        }
+    } catch (error) {
+        console.error('Error confirming PT session delete:', error);
+        return res.status(500).json({ message: 'Failed to confirm PT session delete' });
+    }
+};
+
 module.exports = {
     bookPTSession,
     confirmPTSession,
@@ -184,5 +209,7 @@ module.exports = {
     getTrainers,
     getPTSessionsForCustomer,
     getConfirmedPTSessions,
-    cancelPTSession
+    cancelPTSession,
+    requestDeletePTSession,
+    confirmDeletePTSession
 };
