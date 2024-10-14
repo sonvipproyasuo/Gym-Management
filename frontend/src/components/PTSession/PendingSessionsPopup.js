@@ -8,6 +8,8 @@ const PendingSessionsPopup = ({ trainerUsername, onClose, onConfirmSuccess }) =>
         try {
             const response = await axios.get(`http://localhost:5000/api/pt-sessions/pending/${trainerUsername}`);
             setPendingSessions(response.data);
+            console.log(response.data);
+            
         } catch (error) {
             console.error('Error fetching pending PT sessions:', error);
         }
@@ -22,6 +24,9 @@ const PendingSessionsPopup = ({ trainerUsername, onClose, onConfirmSuccess }) =>
             if (actionType === 'delete') {
                 await axios.post(`http://localhost:5000/api/pt-sessions/confirm-delete`, { session_id: sessionId, action: 'confirm' });
                 alert(`PT session deletion confirmed and session has been removed.`);
+            } else if (actionType === 'update') {
+                await axios.post(`http://localhost:5000/api/pt-sessions/confirm-update`, { session_id: sessionId, action: 'confirm' });
+                alert(`PT session update confirmed successfully.`);
             } else {
                 await axios.put(`http://localhost:5000/api/pt-sessions/confirm`, { session_id: sessionId, action_type: actionType });
                 alert(`PT session ${actionType} confirmed successfully.`);
@@ -40,8 +45,9 @@ const PendingSessionsPopup = ({ trainerUsername, onClose, onConfirmSuccess }) =>
                 await axios.post(`http://localhost:5000/api/pt-sessions/confirm-delete`, { session_id: sessionId, action: 'reject' });
                 alert(`PT session ${actionType} request has been canceled and session remains unchanged.`);
             } else if (actionType === 'create') {
-                await axios.put(`http://localhost:5000/api/pt-sessions/cancel`, { session_id: sessionId, action_type: 'create' });
-                alert(`Pending PT session creation has been canceled.`);
+                // Sử dụng API deleteSession để xóa PT session khi cancel tạo mới
+                await axios.delete(`http://localhost:5000/api/pt-sessions/delete`, { data: { session_id: sessionId } });
+                alert(`Pending PT session creation has been canceled and session has been deleted.`);
             }
             onConfirmSuccess();
             onClose();
@@ -78,6 +84,8 @@ const PendingSessionsPopup = ({ trainerUsername, onClose, onConfirmSuccess }) =>
 
                                 {session.pending_action === 'update' && (
                                     <>
+                                        <p>New Date: {new Date(session.new_session_date).toLocaleDateString()}</p>
+                                        <p>New Time: {new Date(`${session.new_session_date.split('T')[0]}T${session.new_start_time}`).toLocaleTimeString()}</p>
                                         <button onClick={() => handleConfirm(session.id, 'update')}>Confirm Update</button>
                                         <button onClick={() => handleCancel(session.id, 'update')}>Cancel Update</button>
                                     </>

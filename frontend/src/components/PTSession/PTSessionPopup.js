@@ -34,7 +34,11 @@ const PTSessionPopup = ({ trainers, username, onClose }) => {
             onClose();
         } catch (error) {
             console.error('Error booking PT session:', error);
-            setError('Failed to book PT session. Please try again.');
+            if (error.response && error.response.data && error.response.data.message) {
+                setError(error.response.data.message);
+            } else {
+                setError('Failed to book PT session. Please try again.');
+            }
         }
     };
 

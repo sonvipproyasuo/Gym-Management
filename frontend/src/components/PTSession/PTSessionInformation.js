@@ -1,12 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 
-const PTSessionInformation = ({ classDetails, onClose, onDeleteSuccess, onUpdate }) => {
+const PTSessionInformation = ({ classDetails, onClose, onDeleteSuccess }) => {
+    const [newSessionDate, setNewSessionDate] = useState('');
+    const [newStartTime, setNewStartTime] = useState('');
+
     if (!classDetails) {
         return null;
     }
 
     const { id, full_name, description, status, time } = classDetails;
+
+    const handleUpdateRequest = async () => {
+        try {
+            await axios.put(`http://localhost:5000/api/pt-sessions/request-update`, {
+                session_id: id,
+                new_session_date: newSessionDate,
+                new_start_time: newStartTime
+            });
+            alert('Update request sent. Waiting for trainer confirmation.');
+        } catch (error) {
+            console.error('Error sending update request:', error);
+            alert('Failed to send update request.');
+        }
+    };
 
     const handleDeleteRequest = async () => {
         try {
@@ -19,10 +36,6 @@ const PTSessionInformation = ({ classDetails, onClose, onDeleteSuccess, onUpdate
             console.error('Error sending delete request:', error);
             alert('Failed to send delete request.');
         }
-    };
-
-    const handleUpdate = () => {
-        onUpdate();
     };
 
     const sessionDateTime = new Date(time);
@@ -39,7 +52,25 @@ const PTSessionInformation = ({ classDetails, onClose, onDeleteSuccess, onUpdate
 
             {status === 'confirmed' && (
                 <div>
-                    <button onClick={handleUpdate}>Update PT Session</button>
+                    <div className="form-group-container">
+                        <div className="form-group">
+                        <label>New Date</label>
+                        <input 
+                            type="date" 
+                            value={newSessionDate} 
+                            onChange={(e) => setNewSessionDate(e.target.value)} 
+                        />
+                        </div>
+                        <div className="form-group">
+                        <label>New Start Time</label>
+                        <input 
+                            type="time" 
+                            value={newStartTime} 
+                            onChange={(e) => setNewStartTime(e.target.value)} 
+                        />
+                        </div>
+                    </div>
+                    <button onClick={handleUpdateRequest}>Submit Update Request</button>
                     <button onClick={handleDeleteRequest}>Request Delete PT Session</button>
                 </div>
             )}

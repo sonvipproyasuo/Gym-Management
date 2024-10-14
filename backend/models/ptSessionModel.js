@@ -79,7 +79,17 @@ const getPendingSessions = async (trainer_username) => {
         AND pt_sessions.status = 'pending'
     `;
     const [rows] = await db.execute(query, [trainer_username]);
-    return rows;
+
+    const updatedRows = rows.map(row => {
+        if (row.session_date) {
+            const sessionDate = new Date(row.session_date);
+            sessionDate.setDate(sessionDate.getDate() + 1);
+            row.session_date = sessionDate.toISOString().split('T')[0];
+        }
+        return row;
+    });
+
+    return updatedRows;
 };
 
 const getAvailableTrainers = async () => {
@@ -99,7 +109,17 @@ const getSessionsByCustomer = async (customer_username) => {
         WHERE pt_sessions.customer_username = ?
     `;
     const [rows] = await db.execute(query, [customer_username]);
-    return rows;
+
+    const updatedRows = rows.map(row => {
+        if (row.session_date) {
+            const sessionDate = new Date(row.session_date);
+            sessionDate.setDate(sessionDate.getDate() + 1);
+            row.session_date = sessionDate.toISOString().split('T')[0];
+        }
+        return row;
+    });
+
+    return updatedRows;
 };
 
 const getConfirmedSessions = async (trainer_username) => {
@@ -111,7 +131,17 @@ const getConfirmedSessions = async (trainer_username) => {
         AND pt_sessions.status = 'confirmed'
     `;
     const [rows] = await db.execute(query, [trainer_username]);
-    return rows;
+
+    const updatedRows = rows.map(row => {
+        if (row.session_date) {
+            const sessionDate = new Date(row.session_date);
+            sessionDate.setDate(sessionDate.getDate() + 1);
+            row.session_date = sessionDate.toISOString().split('T')[0];
+        }
+        return row;
+    });
+
+    return updatedRows;
 };
 
 const getSessionById = async (session_id) => {
@@ -141,6 +171,25 @@ const updatePendingAction = async (session_id, pending_action) => {
     await db.execute(query, [pending_action, session_id]);
 };
 
+const setPendingUpdate = async (session_id, new_session_date, new_start_time) => {
+    const query = `
+        UPDATE pt_sessions 
+        SET new_session_date = ?, new_start_time = ?
+        WHERE id = ?
+    `;
+    await db.execute(query, [new_session_date, new_start_time, session_id]);
+};
+
+const applyPendingUpdate = async (session_id) => {
+    const query = `
+        UPDATE pt_sessions 
+        SET session_date = new_session_date, start_time = new_start_time,
+            new_session_date = NULL, new_start_time = NULL
+        WHERE id = ?
+    `;
+    await db.execute(query, [session_id]);
+};
+
 module.exports = {
     checkExistingSession,
     checkTrainerAvailability,
@@ -155,5 +204,7 @@ module.exports = {
     getConfirmedSessions,
     getSessionById,
     updatePendingAction,
-    updateSessionStatus
+    updateSessionStatus,
+    setPendingUpdate,
+    applyPendingUpdate
 };

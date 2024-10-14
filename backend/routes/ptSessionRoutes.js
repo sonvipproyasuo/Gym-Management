@@ -22,4 +22,8 @@ router.post('/pt-sessions/confirm-delete', ptSessionController.confirmDeletePTSe
 
 router.put('/pt-sessions/request-delete', ptSessionController.requestDeletePTSession);
 
+router.put('/pt-sessions/request-update', ptSessionController.requestUpdatePTSession);
+
+router.post('/pt-sessions/confirm-update', ptSessionController.confirmUpdatePTSession);
+
 module.exports = router;

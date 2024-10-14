@@ -1,5 +1,6 @@
 const ptSessionModel = require('../models/ptSessionModel');
 const classModel = require('../models/classModel');
+const notificationModel = require ('../models/notificationModel')
 
 const bookPTSession = async (req, res) => {
     const { customer_username, trainer_username, session_date, start_time } = req.body;
@@ -11,7 +12,7 @@ const bookPTSession = async (req, res) => {
 
         const hasPTSession = await ptSessionModel.checkExistingSession(customer_username, session_date);
         if (hasPTSession) {
-            return res.status(400).json({ message: 'You have already booked a PT session today.' });
+            return res.status(400).json({ message: 'You have already booked a PT session that day.' });
         }
 
         const isTrainerAvailable = await ptSessionModel.checkTrainerAvailability(trainer_username, session_date, start_time);
@@ -20,6 +21,17 @@ const bookPTSession = async (req, res) => {
         }
 
         await ptSessionModel.bookSession(customer_username, trainer_username, session_date, start_time, 'create');
+
+        await notificationModel.createNotification({
+            username: trainer_username,
+            message: `New PT session request from ${customer_username} on ${session_date} at ${start_time}.`
+        });
+
+        await notificationModel.createNotification({
+            username: customer_username,
+            message: `Your PT session request with ${trainer_username} on ${session_date} at ${start_time} is pending confirmation.`
+        });
+
         return res.status(201).json({ message: 'PT session booked successfully. Waiting for trainer confirmation.' });
 
     } catch (error) {
@@ -40,7 +52,12 @@ const confirmPTSession = async (req, res) => {
 
         await ptSessionModel.confirmSession(session_id);
         await ptSessionModel.updatePendingAction(session_id, 'none');
-        
+
+        await notificationModel.createNotification({
+            username: session.customer_username,
+            message: `Your PT session with ${session.trainer_username} on ${session.session_date} at ${session.start_time} has been confirmed.`
+        });
+
         return res.status(200).json({ message: 'PT session confirmed successfully.' });
 
     } catch (error) {
@@ -63,6 +80,12 @@ const cancelPTSession = async (req, res) => {
             case 'delete': {
                 await ptSessionModel.updatePendingAction(session_id, 'none');
                 await ptSessionModel.updateSessionStatus(session_id, 'confirmed');
+
+                await notificationModel.createNotification({
+                    username: session.customer_username,
+                    message: `Your PT session delete request for the session on ${session.session_date} has been rejected.`
+                });
+
                 return res.status(200).json({ message: 'PT session deletion request has been canceled.' });
             }
             default: {
@@ -95,14 +118,18 @@ const updatePTSession = async (req, res) => {
 const deletePTSession = async (req, res) => {
     const { session_id } = req.body;
 
+    if (!session_id) {
+        return res.status(400).json({ message: 'Session ID is required.' });
+    }
+
     try {
         const isConfirmed = await ptSessionModel.isSessionConfirmed(session_id);
         if (!isConfirmed) {
-            return res.status(400).json({ message: 'Session must be confirmed to be deleted.' });
+            await ptSessionModel.deleteSession(session_id);
+            return res.status(200).json({ message: 'PT session deleted successfully.' });
+        } else {
+            return res.status(400).json({ message: 'Cannot delete a confirmed session.' });
         }
-
-        await ptSessionModel.deleteSession(session_id);
-        return res.status(200).json({ message: 'PT session deleted successfully.' });
     } catch (error) {
         console.error('Error deleting PT session:', error);
         return res.status(500).json({ message: 'Failed to delete PT session' });
@@ -136,7 +163,6 @@ const getPTSessionsForCustomer = async (req, res) => {
 
     try {
         const ptSessions = await ptSessionModel.getSessionsByCustomer(customer_username);
-
         res.status(200).json(ptSessions);
     } catch (error) {
         console.error('Error fetching PT sessions:', error);
@@ -168,6 +194,16 @@ const requestDeletePTSession = async (req, res) => {
         await ptSessionModel.updatePendingAction(session_id, 'delete');
         await ptSessionModel.updateSessionStatus(session_id, 'pending');
 
+        await notificationModel.createNotification({
+            username: session.trainer_username,
+            message: `Delete request received for PT session on ${session.session_date}.`
+        });
+
+        await notificationModel.createNotification({
+            username: session.customer_username,
+            message: `Your PT session delete request for ${session.session_date} is pending confirmation by ${session.trainer_username}.`
+        });
+
         return res.status(200).json({ message: 'PT session delete requested. Waiting for trainer confirmation.' });
     } catch (error) {
         console.error('Error requesting PT session delete:', error);
@@ -186,10 +222,22 @@ const confirmDeletePTSession = async (req, res) => {
 
         if (action === 'confirm') {
             await ptSessionModel.deleteSession(session_id);
+
+            await notificationModel.createNotification({
+                username: session.customer_username,
+                message: `Your PT session on ${session.session_date} has been successfully deleted.`
+            });
+
             return res.status(200).json({ message: 'PT session deleted successfully.' });
         } else if (action === 'reject') {
             await ptSessionModel.updatePendingAction(session_id, 'none');
             await ptSessionModel.updateSessionStatus(session_id, 'confirmed');
+
+            await notificationModel.createNotification({
+                username: session.customer_username,
+                message: `Your PT session delete request has been rejected.`
+            });
+
             return res.status(200).json({ message: 'PT session delete request rejected.' });
         } else {
             return res.status(400).json({ message: 'Invalid action.' });
@@ -197,6 +245,89 @@ const confirmDeletePTSession = async (req, res) => {
     } catch (error) {
         console.error('Error confirming PT session delete:', error);
         return res.status(500).json({ message: 'Failed to confirm PT session delete' });
+    }
+};
+
+const requestUpdatePTSession = async (req, res) => {
+    const { session_id, new_session_date, new_start_time } = req.body;
+
+    try {
+        const session = await ptSessionModel.getSessionById(session_id);
+        if (!session) {
+            return res.status(404).json({ message: 'PT session not found.' });
+        }
+
+        const hasClass = await classModel.checkIfClassExists(session.customer_username, new_session_date, new_start_time);
+        if (hasClass) {
+            return res.status(400).json({ message: 'You already have a class at this new time.' });
+        }
+
+        const isTrainerAvailable = await ptSessionModel.checkTrainerAvailability(session.trainer_username, new_session_date, new_start_time);
+        if (!isTrainerAvailable) {
+            return res.status(400).json({ 
+                message: 'Trainer is not available at this new time.', 
+                details: { trainer_username: session.trainer_username, new_session_date, new_start_time } 
+            });
+        }
+
+        await ptSessionModel.updatePendingAction(session_id, 'update');
+        await ptSessionModel.setPendingUpdate(session_id, new_session_date, new_start_time);
+        await ptSessionModel.updateSessionStatus(session_id, 'pending');
+
+        await notificationModel.createNotification({
+            username: session.trainer_username,
+            message: `Update request received for PT session on ${session.session_date} to new date ${new_session_date} and time ${new_start_time}.`
+        });
+
+        await notificationModel.createNotification({
+            username: session.customer_username,
+            message: `Your PT session update request for ${new_session_date} is pending confirmation by ${session.trainer_username}.`
+        });
+
+        return res.status(200).json({ message: 'PT session update requested. Waiting for trainer confirmation.' });
+    } catch (error) {
+        console.error('Error requesting PT session update:', error);
+        return res.status(500).json({ message: 'Failed to request PT session update' });
+    }
+};
+
+
+const confirmUpdatePTSession = async (req, res) => {
+    const { session_id, action } = req.body;
+
+    try {
+        const session = await ptSessionModel.getSessionById(session_id);
+        if (!session) {
+            return res.status(404).json({ message: 'PT session not found.' });
+        }
+
+        if (action === 'confirm') {
+            await ptSessionModel.applyPendingUpdate(session_id);
+            await ptSessionModel.updatePendingAction(session_id, 'none');
+            await ptSessionModel.updateSessionStatus(session_id, 'confirmed');
+
+            await notificationModel.createNotification({
+                username: session.customer_username,
+                message: `Your PT session update for ${session.new_session_date} has been confirmed.`
+            });
+
+            return res.status(200).json({ message: 'PT session updated successfully.' });
+        } else if (action === 'reject') {
+            await ptSessionModel.updatePendingAction(session_id, 'none');
+            await ptSessionModel.updateSessionStatus(session_id, 'confirmed');
+
+            await notificationModel.createNotification({
+                username: session.customer_username,
+                message: `Your PT session update request has been rejected.`
+            });
+
+            return res.status(200).json({ message: 'PT session update request rejected.' });
+        } else {
+            return res.status(400).json({ message: 'Invalid action.' });
+        }
+    } catch (error) {
+        console.error('Error confirming PT session update:', error);
+        return res.status(500).json({ message: 'Failed to confirm PT session update' });
     }
 };
 
@@ -211,5 +342,7 @@ module.exports = {
     getConfirmedPTSessions,
     cancelPTSession,
     requestDeletePTSession,
-    confirmDeletePTSession
+    confirmDeletePTSession,
+    requestUpdatePTSession,
+    confirmUpdatePTSession
 };
